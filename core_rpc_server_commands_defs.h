@@ -1333,14 +1333,14 @@ namespace cryptonote
     uint64_t last_seen;
     uint32_t pruning_seed;
 
-    //peer() = default;
-    //
-    //peer(uint64_t id, const std::string &host, uint64_t last_seen, uint32_t pruning_seed)
-    //  : id(id), host(host), ip(0), port(0), last_seen(last_seen), pruning_seed(pruning_seed)
-    //{}
-    //peer(uint64_t id, uint32_t ip, uint16_t port, uint64_t last_seen, uint32_t pruning_seed)
-    //  : id(id), host(std::to_string(ip)), ip(ip), port(port), last_seen(last_seen), pruning_seed(pruning_seed)
-    //{}
+    peer() = default;
+    
+    peer(uint64_t id, const std::string &host, uint64_t last_seen, uint32_t pruning_seed)
+      : id(id), host(host), ip(0), port(0), last_seen(last_seen), pruning_seed(pruning_seed)
+    {}
+    peer(uint64_t id, uint32_t ip, uint16_t port, uint64_t last_seen, uint32_t pruning_seed)
+      : id(id), host(std::to_string(ip)), ip(ip), port(port), last_seen(last_seen), pruning_seed(pruning_seed)
+    {}
 
     BEGIN_KV_SERIALIZE_MAP()
       KV_SERIALIZE(id)
@@ -1611,7 +1611,7 @@ namespace cryptonote
     std::vector<txpool_histo> histo;
     uint32_t num_double_spends;
 
-    //txpool_stats(): bytes_total(0), bytes_min(0), bytes_max(0), bytes_med(0), fee_total(0), oldest(0), txs_total(0), num_failing(0), num_10m(0), num_not_relayed(0), histo_98pc(0), num_double_spends(0) {}
+    txpool_stats(): bytes_total(0), bytes_min(0), bytes_max(0), bytes_med(0), fee_total(0), oldest(0), txs_total(0), num_failing(0), num_10m(0), num_not_relayed(0), histo_98pc(0), num_double_spends(0) {}
 
     BEGIN_KV_SERIALIZE_MAP()
       KV_SERIALIZE(bytes_total)
