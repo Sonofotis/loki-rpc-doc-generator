@@ -178,6 +178,8 @@ std::vector<Token> parse_rpc_doc()
     fprintf(out_fp2, "%.*s - %u\n", token.len, token.str, token.type);
   }
   
+  print_structure(main_struct);
+  
   fclose(out_fp);
   fclose(out_fp2);
   fclose(core_rpc_doc);
@@ -203,6 +205,7 @@ doc_enum fill_enum(std::vector<Token>* tokens)
     else if ((tokens->at(0)).type == EnumString)
     {
       enumer.name = (tokens->at(0)).str;
+      enumer.name_len = (tokens->at(0)).len;
       tokens->erase(tokens->begin());
     }
     else if ((tokens->at(0)).type == EnumVal)
@@ -222,21 +225,17 @@ doc_enum fill_enum(std::vector<Token>* tokens)
 doc_var fill_var(std::vector<Token>* tokens)
 {
   struct doc_var var;
-  int count = 0;
-  if (count % 100 == 0)
-  {
-    printf("%.*s", (tokens->at(0)).len, (tokens->at(0)).str);
-  }
   while (tokens->size() > 0)
   {
-    count++;
     if ((tokens->at(0)).type == VarString)
     {
       var.name = (tokens->at(0)).str;
+      var.name_len = (tokens->at(0)).len;
       tokens->erase(tokens->begin());
       if ((tokens->at(0)).type == CommentString)
       {
         var.comment = (tokens->at(0)).str;
+        var.comment_len = (tokens->at(0)).len;
         tokens->erase(tokens->begin());
         return var;
       }
@@ -248,6 +247,7 @@ doc_var fill_var(std::vector<Token>* tokens)
     else if ((tokens->at(0)).type == TypeString)
     {
       var.type = (tokens->at(0)).str;
+      var.type_len = (tokens->at(0)).len;
       tokens->erase(tokens->begin());
     }
   }
@@ -269,48 +269,33 @@ doc_struct fill_struct(std::vector<Token>* tokens)
       return structure;
     }
     
-    else if ((tokens->at(0)).type == StructStart) 
+    else if ((tokens->at(0)).type == StructStart) // DONE
     {
       tokens->erase(tokens->begin());
       doc_struct new_struct = fill_struct(tokens);
       structure.inner_structs.push_back(new_struct);
     }
-    else if ((tokens->at(0)).type == StructString)
+    else if ((tokens->at(0)).type == StructString) // DONE
     {
       structure.name = (tokens->at(0)).str;
+      structure.name_len = (tokens->at(0)).len;
       tokens->erase(tokens->begin());
     }
     
-    else if ((tokens->at(0)).type == EnumString)
-    {
-      tokens->erase(tokens->begin());
-    }
-    else if ((tokens->at(0)).type == VarString)
-    {
-      tokens->erase(tokens->begin());
-    }
-    else if ((tokens->at(0)).type == CommentString)
+    else if ((tokens->at(0)).type == CommentString) // DONE
     {
       tokens->erase(tokens->begin());
     }
     else if ((tokens->at(0)).type == TypeString)
     {
+      structure.variables.push_back(fill_var(tokens));
+    }
+    
+    else if ((tokens->at(0)).type == TypeDefStart) // DONE
+    {
       tokens->erase(tokens->begin());
     }
     
-    else if ((tokens->at(0)).type == TypeDefStart)
-    {
-      tokens->erase(tokens->begin());
-    }
-    
-    else if ((tokens->at(0)).type == EnumVal) 
-    {
-      tokens->erase(tokens->begin());
-    }
-    else if ((tokens->at(0)).type == EnumDef)
-    {
-      tokens->erase(tokens->begin());
-    }
     else if ((tokens->at(0)).type == EnumStart)
     {
       tokens->erase(tokens->begin());
@@ -318,6 +303,15 @@ doc_struct fill_struct(std::vector<Token>* tokens)
     }
   }
   return structure;
+}
+
+void print_structure(doc_struct structure)
+{
+  printf("--- Structure Name: %.*s ---\n\n", structure.name_len, structure.name);
+  for (auto& struc : structure.inner_structs)
+  {
+    print_structure(struc);
+  }
 }
 
 void next_token(char *s[])

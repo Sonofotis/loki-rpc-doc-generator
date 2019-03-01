@@ -27,7 +27,7 @@ request - 3
 { - 0
 std::list<crypto::hash> - 7
 block_ids - 5
-First 10 blocks id goes sequential, next goes in pow(2,n) offset, like 2, 4, 8, 16, 32, 64 and so on, and the last one is always genesis block - 6
+first 10 blocks id goes sequential, next goes in pow(2,n) offset, like 2, 4, 8, 16, 32, 64 and so on, and the last one is always genesis block - 6
 uint64_t - 7
 start_height - 5
 bool - 7
@@ -58,10 +58,12 @@ uint64_t - 7
 current_height - 5
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 std::vector<block_output_indices> - 7
 output_indices - 5
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 struct - 2
@@ -72,6 +74,7 @@ request - 3
 { - 0
 std::vector<uint64_t> - 7
 heights - 5
+list of block heights - 6
 } - 1
 struct - 2
 response - 3
@@ -80,8 +83,10 @@ std::vector<block_complete_entry> - 7
 blocks - 5
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 struct - 2
@@ -96,10 +101,13 @@ response - 3
 { - 0
 std::vector<std::string> - 7
 blks_hashes - 5
+list of alternative blocks hashes to main chain - 6
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 struct - 2
@@ -110,7 +118,7 @@ request - 3
 { - 0
 std::list<crypto::hash> - 7
 block_ids - 5
-First 10 blocks id goes sequential, next goes in pow(2,n) offset, like 2, 4, 8, 16, 32, 64 and so on, and the last one is always genesis block */ - 6
+first 10 blocks id goes sequential, next goes in pow(2,n) offset, like 2, 4, 8, 16, 32, 64 and so on, and the last one is always genesis block - 6
 uint64_t - 7
 start_height - 5
 } - 1
@@ -119,14 +127,17 @@ response - 3
 { - 0
 std::vector<crypto::hash> - 7
 m_block_ids - 5
+see block_ids above. - 6
 uint64_t - 7
 start_height - 5
 uint64_t - 7
 current_height - 5
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 ----------------------------------------------- - 6
@@ -441,10 +452,13 @@ request - 3
 { - 0
 std::vector<std::string> - 7
 txs_hashes - 5
+List of transaction hashes to look up. - 6
 bool - 7
 decode_as_json - 5
+Optional (false by default). If set true, the returned transaction information will be decoded rather than binary. - 6
 bool - 7
 prune - 5
+Optional (false by default). - 6
 bool - 7
 split - 5
 } - 1
@@ -453,8 +467,10 @@ entry - 3
 { - 0
 std::string - 7
 tx_hash - 5
+transaction hash - 6
 std::string - 7
 as_hex - 5
+Full transaction information as a hex string. - 6
 std::string - 7
 pruned_as_hex - 5
 std::string - 7
@@ -463,16 +479,22 @@ std::string - 7
 prunable_hash - 5
 std::string - 7
 as_json - 5
+Full transaction information as a JSON string. - 6
 bool - 7
 in_pool - 5
+States if the transaction is in pool (true) or included in a block (false) - 6
 bool - 7
 double_spend_seen - 5
+States if the transaction is a double-spend (true) or not (false) - 6
 uint64_t - 7
 block_height - 5
+block height including the transaction - 6
 uint64_t - 7
 block_timestamp - 5
+Unix time at chich the block has been added to the blockchain - 6
 std::vector<uint64_t> - 7
 output_indices - 5
+transaction indexes - 6
 } - 1
 struct - 2
 response - 3
@@ -487,14 +509,16 @@ transactions decoded as json (old compat) - 6
 in both old and new - 6
 std::vector<std::string> - 7
 missed_tx - 5
-not found transactions - 6
+(Optional - returned if not empty) Transaction hashes that could not be found. - 6
 new style - 6
 std::vector<entry> - 7
 txs - 5
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 ----------------------------------------------- - 6
@@ -516,16 +540,20 @@ request - 3
 { - 0
 std::vector<std::string> - 7
 key_images - 5
+List of key image hex strings to check. - 6
 } - 1
 struct - 2
 response - 3
 { - 0
 std::vector<int> - 7
 spent_status - 5
+List of statuses for each image checked. Statuses are follows: 0 = unspent, 1 = spent in blockchain, 2 = spent in transaction pool - 6
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 ----------------------------------------------- - 6
@@ -543,10 +571,13 @@ response - 3
 { - 0
 std::vector<uint64_t> - 7
 o_indexes - 5
+List of output indexes - 6
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 ----------------------------------------------- - 6
@@ -613,6 +644,7 @@ std::string - 7
 mask - 5
 bool - 7
 unlocked - 5
+States if output is locked (false) or not (true) - 6
 uint64_t - 7
 height - 5
 std::string - 7
@@ -625,8 +657,10 @@ std::vector<outkey> - 7
 outs - 5
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 ----------------------------------------------- - 6
@@ -638,20 +672,26 @@ request - 3
 { - 0
 std::string - 7
 tx_as_hex - 5
+Full transaction information as hexidecimal string. - 6
 bool - 7
 do_not_relay - 5
+Stop relaying transaction to other nodes (default is false). - 6
 } - 1
 struct - 2
 response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. Any other value means that something went wrong. - 6
 std::string - 7
 reason - 5
+Additional information. Currently empty or "Not relayed" if transaction was accepted but not relayed. - 6
 bool - 7
 not_relayed - 5
+Transaction was not relayed (true) or relayed (false). - 6
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 tx_verification_context - 7
 tvc - 5
 } - 1
@@ -665,18 +705,23 @@ request - 3
 { - 0
 std::string - 7
 miner_address - 5
+Account address to mine to. - 6
 uint64_t - 7
 threads_count - 5
+Number of mining thread to run. - 6
 bool - 7
 do_background_mining - 5
+States if the mining should run in background (true) or foreground (false). - 6
 bool - 7
 ignore_battery - 5
+States if battery state (on laptop) should be ignored (true) or not (false). - 6
 } - 1
 struct - 2
 response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. Any other value means that something went wrong. - 6
 } - 1
 } - 1
 ----------------------------------------------- - 6
@@ -692,66 +737,97 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 uint64_t - 7
 height - 5
+Current length of longest chain known to daemon. - 6
 uint64_t - 7
 target_height - 5
+The height of the next block in the chain. - 6
 uint64_t - 7
 difficulty - 5
+Network difficulty (analogous to the strength of the network) - 6
 uint64_t - 7
 target - 5
+Current target for next proof of work. - 6
 uint64_t - 7
 tx_count - 5
+Total number of non-coinbase transaction in the chain. - 6
 uint64_t - 7
 tx_pool_size - 5
+Number of transactions that have been broadcast but not included in a block. - 6
 uint64_t - 7
 alt_blocks_count - 5
+Number of alternative blocks to main chain. - 6
 uint64_t - 7
 outgoing_connections_count - 5
+Number of peers that you are connected to and getting information from. - 6
 uint64_t - 7
 incoming_connections_count - 5
+Number of peers connected to and pulling from your node. - 6
 uint64_t - 7
 rpc_connections_count - 5
+Number of RPC client connected to the daemon (Including this RPC request). - 6
 uint64_t - 7
 white_peerlist_size - 5
+White Peerlist Size - 6
 uint64_t - 7
 grey_peerlist_size - 5
+Grey Peerlist Size - 6
 bool - 7
 mainnet - 5
+States if the node is on the mainnet (true) or not (false). - 6
 bool - 7
 testnet - 5
+States if the node is on the testnet (true) or not (false). - 6
 bool - 7
 stagenet - 5
+States if the node is on the stagenet (true) or not (false). - 6
 std::string - 7
 nettype - 5
+Network type - 6
 std::string - 7
 top_block_hash - 5
+Hash of the highest block in the chain. - 6
 uint64_t - 7
 cumulative_difficulty - 5
+Cumulative difficulty of all blocks in the blockchain. - 6
 uint64_t - 7
 block_size_limit - 5
+Maximum allowed block size - 6
 uint64_t - 7
 block_weight_limit - 5
+Maximum allowed weight - 6
 uint64_t - 7
 block_size_median - 5
+Median block size of latest 100 blocks - 6
 uint64_t - 7
 block_weight_median - 5
+Median weight of latest 100 blocks - 6
 uint64_t - 7
 start_time - 5
+Start time of the daemon, as UNIX time. - 6
 uint64_t - 7
 free_space - 5
+Available disk space on the node. - 6
 bool - 7
 offline - 5
+States if the node is offline (true) or online (false). - 6
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 std::string - 7
 bootstrap_daemon_address - 5
+bootstrap node to give immediate usability to wallets while syncing by proxying RPC to it. (Note: the replies may be untrustworthy). - 6
 uint64_t - 7
 height_without_bootstrap - 5
+Current length of the local chain of the daemon. - 6
 bool - 7
 was_bootstrap_ever_used - 5
+States if a bootstrap node has ever been used since the daemon started. - 6
 uint64_t - 7
 database_size - 5
+Size of database - 6
 bool - 7
 update_available - 5
 std::string - 7
@@ -790,6 +866,7 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 } - 1
 } - 1
 ----------------------------------------------- - 6
@@ -805,16 +882,22 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 bool - 7
 active - 5
+States if mining is enabled (true) or disabled (false). - 6
 uint64_t - 7
 speed - 5
+Mining power in hashes per seconds. - 6
 uint32_t - 7
 threads_count - 5
+Number of running mining threads. - 6
 std::string - 7
 address - 5
+Account address daemon is mining to. Empty if not mining. - 6
 bool - 7
 is_background_mining_enabled - 5
+States if the mining is running in background (true) or foreground (false). - 6
 } - 1
 } - 1
 ----------------------------------------------- - 6
@@ -830,6 +913,7 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 } - 1
 } - 1
 struct - 2
@@ -843,8 +927,10 @@ response - 3
 { - 0
 uint64_t - 7
 count - 5
+Number of blocks - 6
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 } - 1
 } - 1
 struct - 2
@@ -865,31 +951,41 @@ request - 3
 { - 0
 uint64_t - 7
 reserve_size - 5
-max 255 bytes - 6
+Reserve size. - 6
 std::string - 7
 wallet_address - 5
+Address of wallet to receive coinbase transactions if block is successfully mined. - 6
 } - 1
 struct - 2
 response - 3
 { - 0
 uint64_t - 7
 difficulty - 5
+Difficulty of next block. - 6
 uint64_t - 7
 height - 5
+Height on which to mine. - 6
 uint64_t - 7
 reserved_offset - 5
+Reserved offset. - 6
 uint64_t - 7
 expected_reward - 5
+Coinbase reward expected to be received if block is successfully mined. - 6
 std::string - 7
 prev_hash - 5
+Hash of the most recent block on which to mine the next block. - 6
 blobdata - 7
 blocktemplate_blob - 5
+Blob on which to try to mine a new block. - 6
 blobdata - 7
 blockhashing_blob - 5
+Blob on which to try to find a valid nonce. - 6
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 struct - 2
@@ -903,6 +999,7 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 } - 1
 } - 1
 struct - 2
@@ -930,36 +1027,50 @@ block_header_response - 3
 { - 0
 uint8_t - 7
 major_version - 5
+The major version of the loki protocol at this block height. - 6
 uint8_t - 7
 minor_version - 5
+The minor version of the loki protocol at this block height. - 6
 uint64_t - 7
 timestamp - 5
+The unix time at which the block was recorded into the blockchain. - 6
 std::string - 7
 prev_hash - 5
+The hash of the block immediately preceding this block in the chain. - 6
 uint32_t - 7
 nonce - 5
+a cryptographic random one-time number used in mining a Loki block. - 6
 bool - 7
 orphan_status - 5
+Usually false. If true, this block is not part of the longest chain. - 6
 uint64_t - 7
 height - 5
+The number of blocks preceding this block on the blockchain. - 6
 uint64_t - 7
 depth - 5
+The number of blocks succeeding this block on the blockchain. A larger number means an older block. - 6
 std::string - 7
 hash - 5
+The hash of this block. - 6
 difficulty_type - 7
 difficulty - 5
+The strength of the Loki network based on mining power. - 6
 difficulty_type - 7
 cumulative_difficulty - 5
 uint64_t - 7
 reward - 5
+The amount of new generated in this block and rewarded to the miner. Note: 1 LOKI = 1e12 atomic units. - 6
 uint64_t - 7
 miner_reward - 5
 uint64_t - 7
 block_size - 5
+The block size in bytes. - 6
 uint64_t - 7
 block_weight - 5
+The block weight. - 6
 uint64_t - 7
 num_txes - 5
+Number of transactions in the block, not counting the coinbase tx. - 6
 std::string - 7
 pow_hash - 5
 } - 1
@@ -977,10 +1088,12 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 block_header_response - 7
 block_header - 5
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 struct - 2
@@ -991,6 +1104,7 @@ request - 3
 { - 0
 std::string - 7
 hash - 5
+The block's sha256 hash. - 6
 bool - 7
 fill_pow_hash - 5
 } - 1
@@ -999,10 +1113,13 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 block_header_response - 7
 block_header - 5
+A structure containing block header information. See get_last_block_header. - 6
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 struct - 2
@@ -1013,6 +1130,7 @@ request - 3
 { - 0
 uint64_t - 7
 height - 5
+The block's height. - 6
 bool - 7
 fill_pow_hash - 5
 } - 1
@@ -1021,10 +1139,12 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 block_header_response - 7
 block_header - 5
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 struct - 2
@@ -1035,8 +1155,10 @@ request - 3
 { - 0
 std::string - 7
 hash - 5
+The block's hash. - 6
 uint64_t - 7
 height - 5
+The block's height. - 6
 bool - 7
 fill_pow_hash - 5
 } - 1
@@ -1045,18 +1167,23 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 block_header_response - 7
 block_header - 5
 std::string - 7
 miner_tx_hash - 5
 std::vector<std::string> - 7
 tx_hashes - 5
+List of hashes of non-coinbase transactions in the block. If there are no other transactions, this will be an empty list. - 6
 std::string - 7
 blob - 5
+Hexadecimal blob of block information. - 6
 std::string - 7
 json - 5
+JSON formatted block details - 6
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 struct - 2
@@ -1064,14 +1191,19 @@ peer - 3
 { - 0
 uint64_t - 7
 id - 5
+Peer id - 6
 std::string - 7
 host - 5
+IP address in integer format - 6
 uint32_t - 7
 ip - 5
+IP address in integer format - 6
 uint16_t - 7
 port - 5
+TCP port the peer is using to connect to loki network. - 6
 uint64_t - 7
 last_seen - 5
+unix time at which the peer has been seen for the last time - 6
 uint32_t - 7
 pruning_seed - 5
 peer() = default; - 6
@@ -1094,10 +1226,13 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. Any other value means that something went wrong. - 6
 std::vector<peer> - 7
 white_list - 5
+online - 6
 std::vector<peer> - 7
 gray_list - 5
+offline - 6
 } - 1
 } - 1
 struct - 2
@@ -1108,12 +1243,14 @@ request - 3
 { - 0
 bool - 7
 visible - 5
+States if hash rate logs should be visible (true) or hidden (false) - 6
 } - 1
 struct - 2
 response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. Any other value means that something went wrong. - 6
 } - 1
 } - 1
 struct - 2
@@ -1124,12 +1261,14 @@ request - 3
 { - 0
 int8_t - 7
 level - 5
+daemon log level to set from 0 (less verbose) to 4 (most verbose) - 6
 } - 1
 struct - 2
 response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. Any other value means that something went wrong. - 6
 } - 1
 } - 1
 struct - 2
@@ -1140,14 +1279,17 @@ request - 3
 { - 0
 std::string - 7
 categories - 5
+Optional, daemon log categories to enable - 6
 } - 1
 struct - 2
 response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. Any other value means that something went wrong. - 6
 std::string - 7
 categories - 5
+daemon log enabled categories - 6
 } - 1
 } - 1
 struct - 2
@@ -1155,45 +1297,61 @@ tx_info - 3
 { - 0
 std::string - 7
 id_hash - 5
+The transaction ID hash. - 6
 std::string - 7
 tx_json - 5
-TODO - expose this data directly - 6
+JSON structure of all information in the transaction (TODO: expose directly) - 6
 uint64_t - 7
 blob_size - 5
+The size of the full transaction blob. - 6
 uint64_t - 7
 weight - 5
 uint64_t - 7
 fee - 5
+The amount of the mining fee included in the transaction, in atomic units. - 6
 std::string - 7
 max_used_block_id_hash - 5
+Tells the hash of the most recent block with an output used in this transaction. - 6
 uint64_t - 7
 max_used_block_height - 5
+Tells the height of the most recent block with an output used in this transaction. - 6
 bool - 7
 kept_by_block - 5
+States if the tx was included in a block at least once (true) or not (false). - 6
 uint64_t - 7
 last_failed_height - 5
+If the transaction validation has previously failed, this tells at what height that occured. - 6
 std::string - 7
 last_failed_id_hash - 5
+Like the previous, this tells the previous transaction ID hash. - 6
 uint64_t - 7
 receive_time - 5
+The Unix time that the transaction was first seen on the network by the node. - 6
 bool - 7
 relayed - 5
+States if this transaction has been relayed - 6
 uint64_t - 7
 last_relayed_time - 5
+Last unix time at which the transaction has been relayed. - 6
 bool - 7
 do_not_relay - 5
+States if this transaction should not be relayed - 6
 bool - 7
 double_spend_seen - 5
+States if this transaction has been seen as double spend. - 6
 std::string - 7
 tx_blob - 5
+Hexadecimal blob represnting the transaction. - 6
 } - 1
 struct - 2
 spent_key_image_info - 3
 { - 0
 std::string - 7
 id_hash - 5
+Key image. - 6
 std::vector<std::string> - 7
 txs_hashes - 5
+tx hashes of the txes (usually one) spending that key image. - 6
 } - 1
 struct - 2
 COMMAND_RPC_GET_TRANSACTION_POOL - 3
@@ -1207,8 +1365,10 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 std::vector<tx_info> - 7
 transactions - 5
+List of transactions in the mempool are not in a block on the main chain at the moment - 6
 std::vector<spent_key_image_info> - 7
 spent_key_images - 5
 bool - 7
@@ -1227,10 +1387,12 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 std::vector<crypto::hash> - 7
 tx_hashes - 5
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 struct - 2
@@ -1256,10 +1418,13 @@ tx_backlog_entry - 3
 { - 0
 uint64_t - 7
 weight - 5
+binary - 6
 uint64_t - 7
 fee - 5
+binary - 6
 uint64_t - 7
 time_in_pool - 5
+binary - 6
 } - 1
 struct - 2
 COMMAND_RPC_GET_TRANSACTION_POOL_BACKLOG - 3
@@ -1273,6 +1438,7 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 std::vector<tx_backlog_entry> - 7
 backlog - 5
 bool - 7
@@ -1284,53 +1450,52 @@ txpool_histo - 3
 { - 0
 uint32_t - 7
 txs - 5
+number of transactions - 6
 uint64_t - 7
 bytes - 5
+size in bytes. - 6
 } - 1
 struct - 2
 txpool_stats - 3
 { - 0
 uint64_t - 7
 bytes_total - 5
+total size of all transactions in pool - 6
 uint32_t - 7
 bytes_min - 5
+Min transaction size in pool - 6
 uint32_t - 7
 bytes_max - 5
+Max transaction size in pool - 6
 uint32_t - 7
 bytes_med - 5
+Median transaction size in pool - 6
 uint64_t - 7
 fee_total - 5
 uint64_t - 7
 oldest - 5
+unix time of the oldest transaction in the pool - 6
 uint32_t - 7
 txs_total - 5
+total number of transactions. - 6
 uint32_t - 7
 num_failing - 5
+number of failing transactions - 6
 uint32_t - 7
 num_10m - 5
+number of transactions in pool for more than 10 minutes - 6
 uint32_t - 7
 num_not_relayed - 5
+number of non-relayed transactions - 6
 uint64_t - 7
 histo_98pc - 5
+the time 98% of txes are "younger" than - 6
 std::vector<txpool_histo> - 7
 histo - 5
 uint32_t - 7
 num_double_spends - 5
-txpool_stats(): - 7
-bytes_total(0), - 5
-bytes_min(0), - 7
-bytes_max(0), - 5
-bytes_med(0), - 7
-fee_total(0), - 5
-oldest(0), - 7
-txs_total(0), - 5
-num_failing(0), - 7
-num_10m(0), - 5
-num_not_relayed(0), - 7
-histo_98pc(0), - 5
-num_double_spends(0) - 7
-{ - 0
-} - 1
+number of double spend transactions - 6
+txpool_stats(): bytes_total(0), bytes_min(0), bytes_max(0), bytes_med(0), fee_total(0), oldest(0), txs_total(0), num_failing(0), num_10m(0), num_not_relayed(0), histo_98pc(0), num_double_spends(0) {} - 6
 } - 1
 struct - 2
 COMMAND_RPC_GET_TRANSACTION_POOL_STATS - 3
@@ -1344,10 +1509,12 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 txpool_stats - 7
 pool_stats - 5
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 struct - 2
@@ -1362,8 +1529,10 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 std::list<connection_info> - 7
 connections - 5
+All connections and their information. - 6
 } - 1
 } - 1
 struct - 2
@@ -1374,8 +1543,10 @@ request - 3
 { - 0
 uint64_t - 7
 start_height - 5
+The starting block's height. - 6
 uint64_t - 7
 end_height - 5
+The ending block's height. - 6
 bool - 7
 fill_pow_hash - 5
 } - 1
@@ -1384,10 +1555,12 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 std::vector<block_header_response> - 7
 headers - 5
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 struct - 2
@@ -1402,6 +1575,7 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 } - 1
 } - 1
 struct - 2
@@ -1416,6 +1590,7 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 } - 1
 } - 1
 struct - 2
@@ -1430,12 +1605,16 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 uint64_t - 7
 limit_up - 5
+Upload limit in kBytes per second - 6
 uint64_t - 7
 limit_down - 5
+Download limit in kBytes per second - 6
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 struct - 2
@@ -1446,19 +1625,23 @@ request - 3
 { - 0
 int64_t - 7
 limit_down - 5
-all limits (for get and set) are kB/s - 6
+Download limit in kBytes per second (-1 reset to default, 0 don't change the current limit) - 6
 int64_t - 7
 limit_up - 5
+Upload limit in kBytes per second (-1 reset to default, 0 don't change the current limit) - 6
 } - 1
 struct - 2
 response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 int64_t - 7
 limit_up - 5
+unsigned int; Upload limit in kBytes per second - 6
 int64_t - 7
 limit_down - 5
+unsigned int; Download limit in kBytes per second - 6
 } - 1
 } - 1
 struct - 2
@@ -1469,12 +1652,14 @@ request - 3
 { - 0
 uint64_t - 7
 out_peers - 5
+Max number of outgoing peers - 6
 } - 1
 struct - 2
 response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 } - 1
 } - 1
 struct - 2
@@ -1485,12 +1670,14 @@ request - 3
 { - 0
 uint64_t - 7
 in_peers - 5
+Max number of incoming peers - 6
 } - 1
 struct - 2
 response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 } - 1
 } - 1
 struct - 2
@@ -1505,6 +1692,7 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 } - 1
 } - 1
 struct - 2
@@ -1519,6 +1707,7 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 } - 1
 } - 1
 struct - 2
@@ -1535,24 +1724,34 @@ response - 3
 { - 0
 uint8_t - 7
 version - 5
+The major block version for the fork. - 6
 bool - 7
 enabled - 5
+Tells if hard fork is enforced. - 6
 uint32_t - 7
 window - 5
+Number of blocks over which current votes are cast. Default is 10080 blocks. - 6
 uint32_t - 7
 votes - 5
+Number of votes towards hard fork. - 6
 uint32_t - 7
 threshold - 5
+Minimum percent of votes to trigger hard fork. Default is 80. - 6
 uint8_t - 7
 voting - 5
+Hard fork voting status. - 6
 uint32_t - 7
 state - 5
+Current hard fork state: 0 (There is likely a hard fork), 1 (An update is needed to fork properly), or 2 (Everything looks good). - 6
 uint64_t - 7
 earliest_height - 5
+Block height at which hard fork would be enabled if voted in. - 6
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 struct - 2
@@ -1563,10 +1762,13 @@ ban - 3
 { - 0
 std::string - 7
 host - 5
+Banned host (IP in A.B.C.D form). - 6
 uint32_t - 7
 ip - 5
+Banned IP address, in Int format. - 6
 uint32_t - 7
 seconds - 5
+Local Unix time that IP is banned until. - 6
 } - 1
 struct - 2
 request - 3
@@ -1577,6 +1779,7 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 std::vector<ban> - 7
 bans - 5
 } - 1
@@ -1589,24 +1792,30 @@ ban - 3
 { - 0
 std::string - 7
 host - 5
+Host to ban (IP in A.B.C.D form - will support I2P address in the future). - 6
 uint32_t - 7
 ip - 5
+unsigned int; IP address to ban, in Int format. - 6
 bool - 7
 ban - 5
+Set true to ban. - 6
 uint32_t - 7
 seconds - 5
+Number of seconds to ban node. - 6
 } - 1
 struct - 2
 request - 3
 { - 0
 std::vector<ban> - 7
 bans - 5
+Nodes to ban - 6
 } - 1
 struct - 2
 response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 } - 1
 } - 1
 struct - 2
@@ -1617,12 +1826,14 @@ request - 3
 { - 0
 std::vector<std::string> - 7
 txids - 5
+Optional, list of transactions IDs to flush from pool (all tx ids flushed if empty). - 6
 } - 1
 struct - 2
 response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 } - 1
 } - 1
 struct - 2
@@ -1647,39 +1858,29 @@ entry - 3
 { - 0
 uint64_t - 7
 amount - 5
+Output amount in atomic units - 6
 uint64_t - 7
 total_instances - 5
 uint64_t - 7
 unlocked_instances - 5
 uint64_t - 7
 recent_instances - 5
-entry(uint64_t - 7
-amount, - 5
-uint64_t - 7
-total_instances, - 5
-uint64_t - 7
-unlocked_instances, - 5
-uint64_t - 7
-recent_instances): - 5
-amount(amount), - 7
-total_instances(total_instances), - 5
-unlocked_instances(unlocked_instances), - 7
-recent_instances(recent_instances) - 5
-{ - 0
-} - 1
-entry() - 7
-{ - 0
-} - 1
+entry(uint64_t amount, uint64_t total_instances, uint64_t unlocked_instances, uint64_t recent_instances): - 6
+amount(amount), total_instances(total_instances), unlocked_instances(unlocked_instances), recent_instances(recent_instances) {} - 6
+entry() {} - 6
 } - 1
 struct - 2
 response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 std::vector<entry> - 7
 histogram - 5
+list of histogram entries - 6
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 struct - 2
@@ -1694,10 +1895,12 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 uint32_t - 7
 version - 5
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 struct - 2
@@ -1708,18 +1911,23 @@ request - 3
 { - 0
 uint64_t - 7
 height - 5
+Block height from which getting the amounts - 6
 uint64_t - 7
 count - 5
+number of blocks to include in the sum - 6
 } - 1
 struct - 2
 response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 uint64_t - 7
 emission_amount - 5
+amount of coinbase reward in atomic units - 6
 uint64_t - 7
 fee_amount - 5
+amount of fees in atomic units - 6
 } - 1
 } - 1
 struct - 2
@@ -1730,18 +1938,22 @@ request - 3
 { - 0
 uint64_t - 7
 grace_blocks - 5
+Optional - 6
 } - 1
 struct - 2
 response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 uint64_t - 7
 fee - 5
+Amount of fees estimated per kB in atomic units - 6
 uint64_t - 7
 quantization_mask - 5
 bool - 7
 untrusted - 5
+States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false). - 6
 } - 1
 } - 1
 struct - 2
@@ -1756,12 +1968,16 @@ chain_info - 3
 { - 0
 std::string - 7
 block_hash - 5
+the block hash of the first diverging block of this alternative chain. - 6
 uint64_t - 7
 height - 5
+the block height of the first diverging block of this alternative chain. - 6
 uint64_t - 7
 length - 5
+the length in blocks of this alternative chain, after divergence. - 6
 uint64_t - 7
 difficulty - 5
+the cumulative difficulty of all blocks in the alternative chain. - 6
 std::vector<std::string> - 7
 block_hashes - 5
 std::string - 7
@@ -1772,6 +1988,7 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 std::list<chain_info> - 7
 chains - 5
 } - 1
@@ -1784,18 +2001,23 @@ request - 3
 { - 0
 std::string - 7
 command - 5
+command to use, either check or download - 6
 std::string - 7
 path - 5
+Optional, path where to download the update. - 6
 } - 1
 struct - 2
 response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 bool - 7
 update - 5
+States if an update is available to download (true) or not (false) - 6
 std::string - 7
 version - 5
+Version available for download. - 6
 std::string - 7
 user_uri - 5
 std::string - 7
@@ -1804,6 +2026,7 @@ std::string - 7
 hash - 5
 std::string - 7
 path - 5
+path to download the update - 6
 } - 1
 } - 1
 struct - 2
@@ -1814,12 +2037,14 @@ request - 3
 { - 0
 std::vector<std::string> - 7
 txids - 5
+list of transaction IDs to relay - 6
 } - 1
 struct - 2
 response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 } - 1
 } - 1
 struct - 2
@@ -1840,28 +2065,37 @@ span - 3
 { - 0
 uint64_t - 7
 start_block_height - 5
+block height of the first block in that span - 6
 uint64_t - 7
 nblocks - 5
+number of blocks in that span - 6
 std::string - 7
 connection_id - 5
+Id of connection - 6
 uint32_t - 7
 rate - 5
+connection rate - 6
 uint32_t - 7
 speed - 5
+connection speed - 6
 uint64_t - 7
 size - 5
+total number of bytes in that span's blocks (including txes) - 6
 std::string - 7
 remote_address - 5
+peer address the node is downloading (or has downloaded) than span from - 6
 } - 1
 struct - 2
 response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 uint64_t - 7
 height - 5
 uint64_t - 7
 target_height - 5
+target height the node is syncing from (optional, absent if node is fully synced) - 6
 uint32_t - 7
 next_needed_pruning_seed - 5
 std::list<peer> - 7
@@ -1880,12 +2114,16 @@ request - 3
 { - 0
 std::vector<uint64_t> - 7
 amounts - 5
+amounts to look for - 6
 uint64_t - 7
 from_height - 5
+(optional, default is 0) starting height to check from - 6
 uint64_t - 7
 to_height - 5
+(optional, default is 0) ending height to check up to - 6
 bool - 7
 cumulative - 5
+(optional, default is false) States if the result should be cumulative (true) or not (false) - 6
 bool - 7
 binary - 5
 bool - 7
@@ -1910,6 +2148,7 @@ response - 3
 { - 0
 std::string - 7
 status - 5
+General RPC error code. "OK" means everything looks good. - 6
 std::vector<distribution> - 7
 distributions - 5
 bool - 7

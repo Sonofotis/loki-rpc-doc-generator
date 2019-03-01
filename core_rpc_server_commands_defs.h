@@ -119,10 +119,10 @@ namespace cryptonote
 
     struct request
     {
-      std::list<crypto::hash> block_ids; // First 10 blocks id goes sequential, next goes in pow(2,n) offset, like 2, 4, 8, 16, 32, 64 and so on, and the last one is always genesis block
-      uint64_t    start_height;
+      std::list<crypto::hash> block_ids; // first 10 blocks id goes sequential, next goes in pow(2,n) offset, like 2, 4, 8, 16, 32, 64 and so on, and the last one is always genesis block
+      uint64_t    start_height; 
       bool        prune;
-      bool        no_miner_tx;
+      bool        no_miner_tx; 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE_CONTAINER_POD_AS_BLOB(block_ids)
         KV_SERIALIZE(start_height)
@@ -133,7 +133,7 @@ namespace cryptonote
 
     struct tx_output_indices
     {
-      std::vector<uint64_t> indices;
+      std::vector<uint64_t> indices; 
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(indices)
@@ -154,9 +154,9 @@ namespace cryptonote
       std::vector<block_complete_entry> blocks; 
       uint64_t    start_height;
       uint64_t    current_height;
-      std::string status;
-      std::vector<block_output_indices> output_indices;
-      bool untrusted;
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      std::vector<block_output_indices> output_indices; 
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(blocks)
@@ -173,7 +173,7 @@ namespace cryptonote
   {
     struct request
     {
-      std::vector<uint64_t> heights;
+      std::vector<uint64_t> heights; // list of block heights
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(heights)
       END_KV_SERIALIZE_MAP()
@@ -181,9 +181,9 @@ namespace cryptonote
 
     struct response
     {
-      std::vector<block_complete_entry> blocks;
-      std::string status;
-      bool untrusted;
+      std::vector<block_complete_entry> blocks; 
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(blocks)
@@ -203,9 +203,9 @@ namespace cryptonote
 
         struct response
         {
-            std::vector<std::string> blks_hashes;
-            std::string status;
-            bool untrusted;
+            std::vector<std::string> blks_hashes; // list of alternative blocks hashes to main chain
+            std::string status; // General RPC error code. "OK" means everything looks good.
+            bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
 
             BEGIN_KV_SERIALIZE_MAP()
                 KV_SERIALIZE(blks_hashes)
@@ -219,7 +219,7 @@ namespace cryptonote
 
     struct request
     {
-      std::list<crypto::hash> block_ids; // First 10 blocks id goes sequential, next goes in pow(2,n) offset, like 2, 4, 8, 16, 32, 64 and so on, and the last one is always genesis block */
+      std::list<crypto::hash> block_ids; // first 10 blocks id goes sequential, next goes in pow(2,n) offset, like 2, 4, 8, 16, 32, 64 and so on, and the last one is always genesis block
       uint64_t    start_height;
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE_CONTAINER_POD_AS_BLOB(block_ids)
@@ -229,11 +229,11 @@ namespace cryptonote
 
     struct response
     {
-      std::vector<crypto::hash> m_block_ids;
+      std::vector<crypto::hash> m_block_ids; // see block_ids above.
       uint64_t    start_height;
       uint64_t    current_height;
-      std::string status;
-      bool untrusted;
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE_CONTAINER_POD_AS_BLOB(m_block_ids)
@@ -602,9 +602,9 @@ namespace cryptonote
   {
     struct request
     {
-      std::vector<std::string> txs_hashes;
-      bool decode_as_json;
-      bool prune;
+      std::vector<std::string> txs_hashes; // List of transaction hashes to look up.
+      bool decode_as_json; // Optional (false by default). If set true, the returned transaction information will be decoded rather than binary.
+      bool prune; // Optional (false by default).
       bool split;
 
       BEGIN_KV_SERIALIZE_MAP()
@@ -617,17 +617,17 @@ namespace cryptonote
 
     struct entry
     {
-      std::string tx_hash;
-      std::string as_hex;
+      std::string tx_hash; // transaction hash
+      std::string as_hex; // Full transaction information as a hex string.
       std::string pruned_as_hex;
       std::string prunable_as_hex;
       std::string prunable_hash;
-      std::string as_json;
-      bool in_pool;
-      bool double_spend_seen;
-      uint64_t block_height;
-      uint64_t block_timestamp;
-      std::vector<uint64_t> output_indices;
+      std::string as_json; // Full transaction information as a JSON string.
+      bool in_pool; // States if the transaction is in pool (true) or included in a block (false)
+      bool double_spend_seen; // States if the transaction is a double-spend (true) or not (false)
+      uint64_t block_height; // block height including the transaction
+      uint64_t block_timestamp; // Unix time at chich the block has been added to the blockchain
+      std::vector<uint64_t> output_indices; // transaction indexes
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(tx_hash)
@@ -647,16 +647,16 @@ namespace cryptonote
     struct response
     {
       // older compatibility stuff
-      std::vector<std::string> txs_as_hex;  //transactions blobs as hex (old compat)
-      std::vector<std::string> txs_as_json; //transactions decoded as json (old compat)
+      std::vector<std::string> txs_as_hex;  // transactions blobs as hex (old compat)
+      std::vector<std::string> txs_as_json; // transactions decoded as json (old compat)
 
       // in both old and new
-      std::vector<std::string> missed_tx;   //not found transactions
+      std::vector<std::string> missed_tx;   // (Optional - returned if not empty) Transaction hashes that could not be found.
 
       // new style
       std::vector<entry> txs;
-      std::string status;
-      bool untrusted;
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(txs_as_hex)
@@ -676,11 +676,11 @@ namespace cryptonote
       UNSPENT = 0,
       SPENT_IN_BLOCKCHAIN = 1,
       SPENT_IN_POOL = 2,
-    };
+    }; 
 
     struct request
     {
-      std::vector<std::string> key_images;
+      std::vector<std::string> key_images; // List of key image hex strings to check.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(key_images)
@@ -690,9 +690,9 @@ namespace cryptonote
 
     struct response
     {
-      std::vector<int> spent_status;
-      std::string status;
-      bool untrusted;
+      std::vector<int> spent_status; // List of statuses for each image checked. Statuses are follows: 0 = unspent, 1 = spent in blockchain, 2 = spent in transaction pool
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(spent_status)
@@ -716,9 +716,9 @@ namespace cryptonote
 
     struct response
     {
-      std::vector<uint64_t> o_indexes;
-      std::string status;
-      bool untrusted;
+      std::vector<uint64_t> o_indexes; // List of output indexes
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(o_indexes)
         KV_SERIALIZE(status)
@@ -742,8 +742,8 @@ namespace cryptonote
   {
     struct request
     {
-      std::vector<get_outputs_out> outputs;
-      bool get_txid;
+      std::vector<get_outputs_out> outputs; 
+      bool get_txid; 
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(outputs)
@@ -797,7 +797,7 @@ namespace cryptonote
     {
       std::string key;
       std::string mask;
-      bool unlocked;
+      bool unlocked; // States if output is locked (false) or not (true)
       uint64_t height;
       std::string txid;
 
@@ -813,8 +813,8 @@ namespace cryptonote
     struct response
     {
       std::vector<outkey> outs;
-      std::string status;
-      bool untrusted;
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(outs)
@@ -828,8 +828,8 @@ namespace cryptonote
   {
     struct request
     {
-      std::string tx_as_hex;
-      bool do_not_relay;
+      std::string tx_as_hex; // Full transaction information as hexidecimal string.
+      bool do_not_relay; // Stop relaying transaction to other nodes (default is false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(tx_as_hex)
@@ -840,11 +840,11 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
-      std::string reason;
-      bool not_relayed;
-      bool untrusted;
-      tx_verification_context tvc;
+      std::string status; // General RPC error code. "OK" means everything looks good. Any other value means that something went wrong.
+      std::string reason; // Additional information. Currently empty or "Not relayed" if transaction was accepted but not relayed.
+      bool not_relayed; // Transaction was not relayed (true) or relayed (false).
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
+      tx_verification_context tvc; 
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -860,10 +860,10 @@ namespace cryptonote
   {
     struct request
     {
-      std::string miner_address;
-      uint64_t    threads_count;
-      bool        do_background_mining;
-      bool        ignore_battery;
+      std::string miner_address; // Account address to mine to.
+      uint64_t    threads_count; // Number of mining thread to run.
+      bool        do_background_mining; // States if the mining should run in background (true) or foreground (false).
+      bool        ignore_battery; // States if battery state (on laptop) should be ignored (true) or not (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(miner_address)
@@ -875,7 +875,7 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
+      std::string status; // General RPC error code. "OK" means everything looks good. Any other value means that something went wrong.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -894,38 +894,38 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
-      uint64_t height;
-      uint64_t target_height;
-      uint64_t difficulty;
-      uint64_t target;
-      uint64_t tx_count;
-      uint64_t tx_pool_size;
-      uint64_t alt_blocks_count;
-      uint64_t outgoing_connections_count;
-      uint64_t incoming_connections_count;
-      uint64_t rpc_connections_count;
-      uint64_t white_peerlist_size;
-      uint64_t grey_peerlist_size;
-      bool mainnet;
-      bool testnet;
-      bool stagenet;
-      std::string nettype;
-      std::string top_block_hash;
-      uint64_t cumulative_difficulty;
-      uint64_t block_size_limit;
-      uint64_t block_weight_limit;
-      uint64_t block_size_median;
-      uint64_t block_weight_median;
-      uint64_t start_time;
-      uint64_t free_space;
-      bool offline;
-      bool untrusted;
-      std::string bootstrap_daemon_address;
-      uint64_t height_without_bootstrap;
-      bool was_bootstrap_ever_used;
-      uint64_t database_size;
-      bool update_available;
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      uint64_t height; // Current length of longest chain known to daemon.
+      uint64_t target_height; // The height of the next block in the chain.
+      uint64_t difficulty; // Network difficulty (analogous to the strength of the network)
+      uint64_t target; // Current target for next proof of work.
+      uint64_t tx_count; // Total number of non-coinbase transaction in the chain.
+      uint64_t tx_pool_size; // Number of transactions that have been broadcast but not included in a block.
+      uint64_t alt_blocks_count; // Number of alternative blocks to main chain.
+      uint64_t outgoing_connections_count; // Number of peers that you are connected to and getting information from.
+      uint64_t incoming_connections_count; // Number of peers connected to and pulling from your node.
+      uint64_t rpc_connections_count; // Number of RPC client connected to the daemon (Including this RPC request).
+      uint64_t white_peerlist_size; // White Peerlist Size
+      uint64_t grey_peerlist_size; // Grey Peerlist Size
+      bool mainnet; // States if the node is on the mainnet (true) or not (false).
+      bool testnet; // States if the node is on the testnet (true) or not (false).
+      bool stagenet; // States if the node is on the stagenet (true) or not (false).
+      std::string nettype; // Network type
+      std::string top_block_hash; // Hash of the highest block in the chain.
+      uint64_t cumulative_difficulty; // Cumulative difficulty of all blocks in the blockchain.
+      uint64_t block_size_limit; // Maximum allowed block size
+      uint64_t block_weight_limit; // Maximum allowed weight
+      uint64_t block_size_median; // Median block size of latest 100 blocks
+      uint64_t block_weight_median; // Median weight of latest 100 blocks
+      uint64_t start_time; // Start time of the daemon, as UNIX time.
+      uint64_t free_space; // Available disk space on the node.
+      bool offline; // States if the node is offline (true) or online (false).
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
+      std::string bootstrap_daemon_address; // bootstrap node to give immediate usability to wallets while syncing by proxying RPC to it. (Note: the replies may be untrustworthy).
+      uint64_t height_without_bootstrap; // Current length of the local chain of the daemon.
+      bool was_bootstrap_ever_used; // States if a bootstrap node has ever been used since the daemon started.
+      uint64_t database_size; // Size of database
+      bool update_available; 
       std::string version;
 
       BEGIN_KV_SERIALIZE_MAP()
@@ -1001,7 +1001,7 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
+      std::string status; // General RPC error code. "OK" means everything looks good.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -1022,12 +1022,12 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
-      bool active;
-      uint64_t speed;
-      uint32_t threads_count;
-      std::string address;
-      bool is_background_mining_enabled;
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      bool active; // States if mining is enabled (true) or disabled (false).
+      uint64_t speed; // Mining power in hashes per seconds.
+      uint32_t threads_count; // Number of running mining threads.
+      std::string address; // Account address daemon is mining to. Empty if not mining.
+      bool is_background_mining_enabled; // States if the mining is running in background (true) or foreground (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -1053,7 +1053,7 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
+      std::string status; // General RPC error code. "OK" means everything looks good.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -1067,8 +1067,8 @@ namespace cryptonote
 
     struct response
     {
-      uint64_t count;
-      std::string status;
+      uint64_t count; // Number of blocks
+      std::string status; // General RPC error code. "OK" means everything looks good.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(count)
@@ -1090,8 +1090,8 @@ namespace cryptonote
   {
     struct request
     {
-      uint64_t reserve_size;       //max 255 bytes
-      std::string wallet_address; 
+      uint64_t reserve_size; // Reserve size.
+      std::string wallet_address; // Address of wallet to receive coinbase transactions if block is successfully mined.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(reserve_size)
@@ -1101,15 +1101,15 @@ namespace cryptonote
 
     struct response
     {
-      uint64_t difficulty;
-      uint64_t height;
-      uint64_t reserved_offset;
-      uint64_t expected_reward;
-      std::string prev_hash;
-      blobdata blocktemplate_blob;
-      blobdata blockhashing_blob;
-      std::string status;
-      bool untrusted;
+      uint64_t difficulty; // Difficulty of next block.
+      uint64_t height; // Height on which to mine.
+      uint64_t reserved_offset; // Reserved offset.
+      uint64_t expected_reward; // Coinbase reward expected to be received if block is successfully mined.
+      std::string prev_hash; // Hash of the most recent block on which to mine the next block.
+      blobdata blocktemplate_blob; // Blob on which to try to mine a new block.
+      blobdata blockhashing_blob; // Blob on which to try to find a valid nonce.
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(difficulty)
@@ -1131,7 +1131,7 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
+      std::string status; // General RPC error code. "OK" means everything looks good.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -1166,22 +1166,22 @@ namespace cryptonote
 
   struct block_header_response
   {
-      uint8_t major_version;
-      uint8_t minor_version;
-      uint64_t timestamp;
-      std::string prev_hash;
-      uint32_t nonce;
-      bool orphan_status;
-      uint64_t height;
-      uint64_t depth;
-      std::string hash;
-      difficulty_type difficulty;
-      difficulty_type cumulative_difficulty;
-      uint64_t reward;
-      uint64_t miner_reward;
-      uint64_t block_size;
-      uint64_t block_weight;
-      uint64_t num_txes;
+      uint8_t major_version; // The major version of the loki protocol at this block height.
+      uint8_t minor_version; // The minor version of the loki protocol at this block height.
+      uint64_t timestamp; // The unix time at which the block was recorded into the blockchain.
+      std::string prev_hash; // The hash of the block immediately preceding this block in the chain.
+      uint32_t nonce; // a cryptographic random one-time number used in mining a Loki block.
+      bool orphan_status; // Usually false. If true, this block is not part of the longest chain.
+      uint64_t height; // The number of blocks preceding this block on the blockchain.
+      uint64_t depth; // The number of blocks succeeding this block on the blockchain. A larger number means an older block.
+      std::string hash; // The hash of this block.
+      difficulty_type difficulty; // The strength of the Loki network based on mining power.
+      difficulty_type cumulative_difficulty; 
+      uint64_t reward; // The amount of new generated in this block and rewarded to the miner. Note: 1 LOKI = 1e12 atomic units.
+      uint64_t miner_reward; 
+      uint64_t block_size; // The block size in bytes.
+      uint64_t block_weight; // The block weight.
+      uint64_t num_txes; // Number of transactions in the block, not counting the coinbase tx.
       std::string pow_hash;
 
       BEGIN_KV_SERIALIZE_MAP()
@@ -1218,9 +1218,9 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
+      std::string status; // General RPC error code. "OK" means everything looks good.
       block_header_response block_header;
-      bool untrusted;
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(block_header)
@@ -1235,7 +1235,7 @@ namespace cryptonote
   {
     struct request
     {
-      std::string hash;
+      std::string hash; // The block's sha256 hash.
       bool fill_pow_hash;
 
       BEGIN_KV_SERIALIZE_MAP()
@@ -1246,9 +1246,9 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
-      block_header_response block_header;
-      bool untrusted;
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      block_header_response block_header; // A structure containing block header information. See get_last_block_header.
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(block_header)
@@ -1263,7 +1263,7 @@ namespace cryptonote
   {
     struct request
     {
-      uint64_t height;
+      uint64_t height; // The block's height.
       bool fill_pow_hash;
 
       BEGIN_KV_SERIALIZE_MAP()
@@ -1274,9 +1274,9 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
-      block_header_response block_header;
-      bool untrusted;
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      block_header_response block_header; 
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(block_header)
@@ -1291,8 +1291,8 @@ namespace cryptonote
   {
     struct request
     {
-      std::string hash;
-      uint64_t height;
+      std::string hash; // The block's hash.
+      uint64_t height; // The block's height.
       bool fill_pow_hash;
 
       BEGIN_KV_SERIALIZE_MAP()
@@ -1304,13 +1304,13 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
+      std::string status; // General RPC error code. "OK" means everything looks good.
       block_header_response block_header;
       std::string miner_tx_hash;
-      std::vector<std::string> tx_hashes;
-      std::string blob;
-      std::string json;
-      bool untrusted;
+      std::vector<std::string> tx_hashes; // List of hashes of non-coinbase transactions in the block. If there are no other transactions, this will be an empty list.
+      std::string blob; // Hexadecimal blob of block information.
+      std::string json; // JSON formatted block details
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(block_header)
@@ -1326,21 +1326,21 @@ namespace cryptonote
   };
 
   struct peer {
-    uint64_t id;
-    std::string host;
-    uint32_t ip;
-    uint16_t port;
-    uint64_t last_seen;
+    uint64_t id; // Peer id
+    std::string host; // IP address in integer format
+    uint32_t ip; // IP address in integer format
+    uint16_t port; // TCP port the peer is using to connect to loki network.
+    uint64_t last_seen; // unix time at which the peer has been seen for the last time
     uint32_t pruning_seed;
 
-    peer() = default;
-    
-    peer(uint64_t id, const std::string &host, uint64_t last_seen, uint32_t pruning_seed)
-      : id(id), host(host), ip(0), port(0), last_seen(last_seen), pruning_seed(pruning_seed)
-    {}
-    peer(uint64_t id, uint32_t ip, uint16_t port, uint64_t last_seen, uint32_t pruning_seed)
-      : id(id), host(std::to_string(ip)), ip(ip), port(port), last_seen(last_seen), pruning_seed(pruning_seed)
-    {}
+    //peer() = default;
+    //
+    //peer(uint64_t id, const std::string &host, uint64_t last_seen, uint32_t pruning_seed)
+    //  : id(id), host(host), ip(0), port(0), last_seen(last_seen), pruning_seed(pruning_seed)
+    //{}
+    //peer(uint64_t id, uint32_t ip, uint16_t port, uint64_t last_seen, uint32_t pruning_seed)
+    //  : id(id), host(std::to_string(ip)), ip(ip), port(port), last_seen(last_seen), pruning_seed(pruning_seed)
+    //{}
 
     BEGIN_KV_SERIALIZE_MAP()
       KV_SERIALIZE(id)
@@ -1362,9 +1362,9 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
-      std::vector<peer> white_list;
-      std::vector<peer> gray_list;
+      std::string status; // General RPC error code. "OK" means everything looks good. Any other value means that something went wrong.
+      std::vector<peer> white_list; // online
+      std::vector<peer> gray_list; // offline
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -1378,7 +1378,7 @@ namespace cryptonote
   {
     struct request
     {
-      bool visible;
+      bool visible; // States if hash rate logs should be visible (true) or hidden (false)
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(visible)
@@ -1387,7 +1387,7 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
+      std::string status; // General RPC error code. "OK" means everything looks good. Any other value means that something went wrong.
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
       END_KV_SERIALIZE_MAP()
@@ -1398,7 +1398,7 @@ namespace cryptonote
   {
     struct request
     {
-      int8_t level;
+      int8_t level; // daemon log level to set from 0 (less verbose) to 4 (most verbose)
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(level)
@@ -1407,7 +1407,7 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
+      std::string status; // General RPC error code. "OK" means everything looks good. Any other value means that something went wrong.
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
       END_KV_SERIALIZE_MAP()
@@ -1418,7 +1418,7 @@ namespace cryptonote
   {
     struct request
     {
-      std::string categories;
+      std::string categories; // Optional, daemon log categories to enable
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(categories)
@@ -1427,8 +1427,8 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
-      std::string categories;
+      std::string status; // General RPC error code. "OK" means everything looks good. Any other value means that something went wrong.
+      std::string categories; // daemon log enabled categories
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -1439,22 +1439,22 @@ namespace cryptonote
 
   struct tx_info
   {
-    std::string id_hash;
-    std::string tx_json; // TODO - expose this data directly
-    uint64_t blob_size;
+    std::string id_hash; // The transaction ID hash.
+    std::string tx_json; // JSON structure of all information in the transaction (TODO: expose directly)
+    uint64_t blob_size; // The size of the full transaction blob.
     uint64_t weight;
-    uint64_t fee;
-    std::string max_used_block_id_hash;
-    uint64_t max_used_block_height;
-    bool kept_by_block;
-    uint64_t last_failed_height;
-    std::string last_failed_id_hash;
-    uint64_t receive_time;
-    bool relayed;
-    uint64_t last_relayed_time;
-    bool do_not_relay;
-    bool double_spend_seen;
-    std::string tx_blob;
+    uint64_t fee; // The amount of the mining fee included in the transaction, in atomic units.
+    std::string max_used_block_id_hash; // Tells the hash of the most recent block with an output used in this transaction.
+    uint64_t max_used_block_height; // Tells the height of the most recent block with an output used in this transaction.
+    bool kept_by_block; // States if the tx was included in a block at least once (true) or not (false).
+    uint64_t last_failed_height; // If the transaction validation has previously failed, this tells at what height that occured.
+    std::string last_failed_id_hash; // Like the previous, this tells the previous transaction ID hash.
+    uint64_t receive_time; // The Unix time that the transaction was first seen on the network by the node.
+    bool relayed; // States if this transaction has been relayed
+    uint64_t last_relayed_time; // Last unix time at which the transaction has been relayed.
+    bool do_not_relay; // States if this transaction should not be relayed
+    bool double_spend_seen; // States if this transaction has been seen as double spend.
+    std::string tx_blob; // Hexadecimal blob represnting the transaction.
 
     BEGIN_KV_SERIALIZE_MAP()
       KV_SERIALIZE(id_hash)
@@ -1478,8 +1478,8 @@ namespace cryptonote
 
   struct spent_key_image_info
   {
-    std::string id_hash;
-    std::vector<std::string> txs_hashes;
+    std::string id_hash; // Key image.
+    std::vector<std::string> txs_hashes; // tx hashes of the txes (usually one) spending that key image.
 
     BEGIN_KV_SERIALIZE_MAP()
       KV_SERIALIZE(id_hash)
@@ -1497,9 +1497,9 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
-      std::vector<tx_info> transactions;
-      std::vector<spent_key_image_info> spent_key_images;
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      std::vector<tx_info> transactions; // List of transactions in the mempool are not in a block on the main chain at the moment
+      std::vector<spent_key_image_info> spent_key_images; 
       bool untrusted;
 
       BEGIN_KV_SERIALIZE_MAP()
@@ -1521,9 +1521,9 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
-      std::vector<crypto::hash> tx_hashes;
-      bool untrusted;
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      std::vector<crypto::hash> tx_hashes; 
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -1557,9 +1557,9 @@ namespace cryptonote
 
   struct tx_backlog_entry
   {
-    uint64_t weight;
-    uint64_t fee;
-    uint64_t time_in_pool;
+    uint64_t weight; // binary
+    uint64_t fee; // binary
+    uint64_t time_in_pool; // binary
   };
 
   struct COMMAND_RPC_GET_TRANSACTION_POOL_BACKLOG
@@ -1572,8 +1572,8 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
-      std::vector<tx_backlog_entry> backlog;
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      std::vector<tx_backlog_entry> backlog; 
       bool untrusted;
 
       BEGIN_KV_SERIALIZE_MAP()
@@ -1586,8 +1586,8 @@ namespace cryptonote
 
   struct txpool_histo
   {
-    uint32_t txs;
-    uint64_t bytes;
+    uint32_t txs; // number of transactions
+    uint64_t bytes; // size in bytes.
 
     BEGIN_KV_SERIALIZE_MAP()
       KV_SERIALIZE(txs)
@@ -1597,21 +1597,21 @@ namespace cryptonote
 
   struct txpool_stats
   {
-    uint64_t bytes_total;
-    uint32_t bytes_min;
-    uint32_t bytes_max;
-    uint32_t bytes_med;
-    uint64_t fee_total;
-    uint64_t oldest;
-    uint32_t txs_total;
-    uint32_t num_failing;
-    uint32_t num_10m;
-    uint32_t num_not_relayed;
-    uint64_t histo_98pc;
+    uint64_t bytes_total; // total size of all transactions in pool
+    uint32_t bytes_min; // Min transaction size in pool
+    uint32_t bytes_max; // Max transaction size in pool
+    uint32_t bytes_med; // Median transaction size in pool
+    uint64_t fee_total; 
+    uint64_t oldest; // unix time of the oldest transaction in the pool
+    uint32_t txs_total; // total number of transactions.
+    uint32_t num_failing; // number of failing transactions
+    uint32_t num_10m; // number of transactions in pool for more than 10 minutes
+    uint32_t num_not_relayed; // number of non-relayed transactions
+    uint64_t histo_98pc; // the time 98% of txes are "younger" than
     std::vector<txpool_histo> histo;
-    uint32_t num_double_spends;
+    uint32_t num_double_spends; // number of double spend transactions
 
-    txpool_stats(): bytes_total(0), bytes_min(0), bytes_max(0), bytes_med(0), fee_total(0), oldest(0), txs_total(0), num_failing(0), num_10m(0), num_not_relayed(0), histo_98pc(0), num_double_spends(0) {}
+    //txpool_stats(): bytes_total(0), bytes_min(0), bytes_max(0), bytes_med(0), fee_total(0), oldest(0), txs_total(0), num_failing(0), num_10m(0), num_not_relayed(0), histo_98pc(0), num_double_spends(0) {}
 
     BEGIN_KV_SERIALIZE_MAP()
       KV_SERIALIZE(bytes_total)
@@ -1640,9 +1640,9 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
+      std::string status; // General RPC error code. "OK" means everything looks good.
       txpool_stats pool_stats;
-      bool untrusted;
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -1662,8 +1662,8 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
-      std::list<connection_info> connections;
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      std::list<connection_info> connections; // All connections and their information.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -1677,8 +1677,8 @@ namespace cryptonote
   {
     struct request
     {
-      uint64_t start_height;
-      uint64_t end_height;
+      uint64_t start_height; // The starting block's height.
+      uint64_t end_height; // The ending block's height.
       bool fill_pow_hash;
 
       BEGIN_KV_SERIALIZE_MAP()
@@ -1690,9 +1690,9 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
-      std::vector<block_header_response> headers;
-      bool untrusted;
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      std::vector<block_header_response> headers; 
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -1712,7 +1712,7 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
+      std::string status; // General RPC error code. "OK" means everything looks good.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -1730,7 +1730,7 @@ namespace cryptonote
 
     struct response
     {
-	  std::string status;
+	  std::string status; // General RPC error code. "OK" means everything looks good.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -1748,10 +1748,10 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
-      uint64_t limit_up;
-      uint64_t limit_down;
-      bool untrusted;
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      uint64_t limit_up; // Upload limit in kBytes per second
+      uint64_t limit_down; // Download limit in kBytes per second
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -1766,8 +1766,8 @@ namespace cryptonote
   {
     struct request
     {
-      int64_t limit_down;  // all limits (for get and set) are kB/s
-      int64_t limit_up;
+      int64_t limit_down; // Download limit in kBytes per second (-1 reset to default, 0 don't change the current limit)
+      int64_t limit_up; // Upload limit in kBytes per second (-1 reset to default, 0 don't change the current limit)
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(limit_down)
@@ -1777,9 +1777,9 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
-      int64_t limit_up;
-      int64_t limit_down;
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      int64_t limit_up; // unsigned int; Upload limit in kBytes per second
+      int64_t limit_down; // unsigned int; Download limit in kBytes per second
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -1793,7 +1793,7 @@ namespace cryptonote
   {
 	struct request
     {
-	  uint64_t out_peers;
+	  uint64_t out_peers; // Max number of outgoing peers
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(out_peers)
       END_KV_SERIALIZE_MAP()
@@ -1801,7 +1801,7 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
+      std::string status; // General RPC error code. "OK" means everything looks good.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -1813,7 +1813,7 @@ namespace cryptonote
   {
     struct request
     {
-      uint64_t in_peers;
+      uint64_t in_peers; // Max number of incoming peers
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(in_peers)
       END_KV_SERIALIZE_MAP()
@@ -1821,7 +1821,7 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
+      std::string status; // General RPC error code. "OK" means everything looks good.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -1839,7 +1839,7 @@ namespace cryptonote
 
     struct response
     {
-	  std::string status;
+	  std::string status; // General RPC error code. "OK" means everything looks good.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -1857,7 +1857,7 @@ namespace cryptonote
 
     struct response
     {
-	  std::string status;
+	  std::string status; // General RPC error code. "OK" means everything looks good.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -1878,16 +1878,16 @@ namespace cryptonote
 
     struct response
     {
-      uint8_t version;
-      bool enabled;
-      uint32_t window;
-      uint32_t votes;
-      uint32_t threshold;
-      uint8_t voting;
-      uint32_t state;
-      uint64_t earliest_height;
-      std::string status;
-      bool untrusted;
+      uint8_t version; // The major block version for the fork.
+      bool enabled; // Tells if hard fork is enforced.
+      uint32_t window; // Number of blocks over which current votes are cast. Default is 10080 blocks.
+      uint32_t votes; // Number of votes towards hard fork.
+      uint32_t threshold; // Minimum percent of votes to trigger hard fork. Default is 80.
+      uint8_t voting; // Hard fork voting status.
+      uint32_t state; // Current hard fork state: 0 (There is likely a hard fork), 1 (An update is needed to fork properly), or 2 (Everything looks good).
+      uint64_t earliest_height; // Block height at which hard fork would be enabled if voted in.
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(version)
@@ -1908,9 +1908,9 @@ namespace cryptonote
   {
     struct ban
     {
-      std::string host;
-      uint32_t ip;
-      uint32_t seconds;
+      std::string host; // Banned host (IP in A.B.C.D form).
+      uint32_t ip; // Banned IP address, in Int format.
+      uint32_t seconds; // Local Unix time that IP is banned until.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(host)
@@ -1927,7 +1927,7 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
+      std::string status; // General RPC error code. "OK" means everything looks good.
       std::vector<ban> bans;
 
       BEGIN_KV_SERIALIZE_MAP()
@@ -1941,10 +1941,10 @@ namespace cryptonote
   {
     struct ban
     {
-      std::string host;
-      uint32_t ip;
-      bool ban;
-      uint32_t seconds;
+      std::string host; // Host to ban (IP in A.B.C.D form - will support I2P address in the future).
+      uint32_t ip; // unsigned int; IP address to ban, in Int format.
+      bool ban; // Set true to ban.
+      uint32_t seconds; // Number of seconds to ban node.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(host)
@@ -1956,7 +1956,7 @@ namespace cryptonote
 
     struct request
     {
-      std::vector<ban> bans;
+      std::vector<ban> bans; // Nodes to ban
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(bans)
@@ -1965,7 +1965,7 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
+      std::string status; // General RPC error code. "OK" means everything looks good.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -1977,7 +1977,7 @@ namespace cryptonote
   {
     struct request
     {
-      std::vector<std::string> txids;
+      std::vector<std::string> txids; // Optional, list of transactions IDs to flush from pool (all tx ids flushed if empty).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(txids)
@@ -1986,7 +1986,7 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
+      std::string status; // General RPC error code. "OK" means everything looks good.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -2015,7 +2015,7 @@ namespace cryptonote
 
     struct entry
     {
-      uint64_t amount;
+      uint64_t amount; // Output amount in atomic units
       uint64_t total_instances;
       uint64_t unlocked_instances;
       uint64_t recent_instances;
@@ -2027,16 +2027,16 @@ namespace cryptonote
         KV_SERIALIZE(recent_instances);
       END_KV_SERIALIZE_MAP()
 
-      entry(uint64_t amount, uint64_t total_instances, uint64_t unlocked_instances, uint64_t recent_instances):
-          amount(amount), total_instances(total_instances), unlocked_instances(unlocked_instances), recent_instances(recent_instances) {}
-      entry() {}
+      //entry(uint64_t amount, uint64_t total_instances, uint64_t unlocked_instances, uint64_t recent_instances):
+      //    amount(amount), total_instances(total_instances), unlocked_instances(unlocked_instances), recent_instances(recent_instances) {}
+      //entry() {}
     };
 
     struct response
     {
-      std::string status;
-      std::vector<entry> histogram;
-      bool untrusted;
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      std::vector<entry> histogram; // list of histogram entries
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -2056,9 +2056,9 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
+      std::string status; // General RPC error code. "OK" means everything looks good.
       uint32_t version;
-      bool untrusted;
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -2072,8 +2072,8 @@ namespace cryptonote
   {
     struct request
     {
-      uint64_t height;
-      uint64_t count;
+      uint64_t height; // Block height from which getting the amounts
+      uint64_t count; // number of blocks to include in the sum
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(height);
@@ -2083,9 +2083,9 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
-      uint64_t emission_amount;
-      uint64_t fee_amount;
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      uint64_t emission_amount; // amount of coinbase reward in atomic units
+      uint64_t fee_amount; // amount of fees in atomic units
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -2099,7 +2099,7 @@ namespace cryptonote
   {
     struct request
     {
-      uint64_t grace_blocks;
+      uint64_t grace_blocks; // Optional
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(grace_blocks)
@@ -2108,10 +2108,10 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
-      uint64_t fee;
-      uint64_t quantization_mask;
-      bool untrusted;
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      uint64_t fee; // Amount of fees estimated per kB in atomic units
+      uint64_t quantization_mask; 
+      bool untrusted; // States if the result is obtained using the bootstrap mode, and is therefore not trusted (true), or when the daemon is fully synced (false).
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -2132,10 +2132,10 @@ namespace cryptonote
 
     struct chain_info
     {
-      std::string block_hash;
-      uint64_t height;
-      uint64_t length;
-      uint64_t difficulty;
+      std::string block_hash; // the block hash of the first diverging block of this alternative chain.
+      uint64_t height; // the block height of the first diverging block of this alternative chain.
+      uint64_t length; // the length in blocks of this alternative chain, after divergence.
+      uint64_t difficulty; // the cumulative difficulty of all blocks in the alternative chain.
       std::vector<std::string> block_hashes;
       std::string main_chain_parent_block;
 
@@ -2151,7 +2151,7 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
+      std::string status; // General RPC error code. "OK" means everything looks good.
       std::list<chain_info> chains;
 
       BEGIN_KV_SERIALIZE_MAP()
@@ -2165,8 +2165,8 @@ namespace cryptonote
   {
     struct request
     {
-      std::string command;
-      std::string path;
+      std::string command; // command to use, either check or download
+      std::string path; // Optional, path where to download the update.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(command);
@@ -2176,13 +2176,13 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
-      bool update;
-      std::string version;
+      std::string status; // General RPC error code. "OK" means everything looks good.
+      bool update; // States if an update is available to download (true) or not (false)
+      std::string version; // Version available for download.
       std::string user_uri;
       std::string auto_uri;
       std::string hash;
-      std::string path;
+      std::string path; // path to download the update
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -2200,7 +2200,7 @@ namespace cryptonote
   {
     struct request
     {
-      std::vector<std::string> txids;
+      std::vector<std::string> txids; // list of transaction IDs to relay
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(txids)
@@ -2209,7 +2209,7 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
+      std::string status; // General RPC error code. "OK" means everything looks good.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -2236,13 +2236,13 @@ namespace cryptonote
 
     struct span
     {
-      uint64_t start_block_height;
-      uint64_t nblocks;
-      std::string connection_id;
-      uint32_t rate;
-      uint32_t speed;
-      uint64_t size;
-      std::string remote_address;
+      uint64_t start_block_height; // block height of the first block in that span
+      uint64_t nblocks; // number of blocks in that span
+      std::string connection_id; // Id of connection
+      uint32_t rate; // connection rate
+      uint32_t speed; // connection speed
+      uint64_t size; // total number of bytes in that span's blocks (including txes)
+      std::string remote_address; // peer address the node is downloading (or has downloaded) than span from
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(start_block_height)
@@ -2257,9 +2257,9 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
+      std::string status; // General RPC error code. "OK" means everything looks good.
       uint64_t height;
-      uint64_t target_height;
+      uint64_t target_height; // target height the node is syncing from (optional, absent if node is fully synced)
       uint32_t next_needed_pruning_seed;
       std::list<peer> peers;
       std::list<span> spans;
@@ -2281,10 +2281,10 @@ namespace cryptonote
   {
     struct request
     {
-      std::vector<uint64_t> amounts;
-      uint64_t from_height;
-      uint64_t to_height;
-      bool cumulative;
+      std::vector<uint64_t> amounts; // amounts to look for
+      uint64_t from_height; // (optional, default is 0) starting height to check from
+      uint64_t to_height; // (optional, default is 0) ending height to check up to
+      bool cumulative; // (optional, default is false) States if the result should be cumulative (true) or not (false)
       bool binary;
       bool compress;
 
@@ -2342,7 +2342,7 @@ namespace cryptonote
 
     struct response
     {
-      std::string status;
+      std::string status; // General RPC error code. "OK" means everything looks good.
       std::vector<distribution> distributions;
       bool untrusted;
 

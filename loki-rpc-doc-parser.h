@@ -27,20 +27,27 @@ enum TokenType
 struct doc_var
 {
   const char *type;
+  int type_len;
   const char *name;
+  int name_len;
   const char *comment;
+  int comment_len;
 };
 
 struct doc_enum
 {
   const char *name;
+  int name_len;
   std::vector<const char*> names;
+  std::vector<int> names_lens;
   std::vector<const char*> vals;
+  std::vector<int> vals_lens;
 };
 
 struct doc_struct
 {
   const char *name;
+  int name_len;
   std::vector<doc_struct> inner_structs;
   std::vector<doc_var> variables;
   std::vector<doc_enum> enums;
@@ -73,3 +80,5 @@ bool type_definition(char *s[]);
 
 doc_enum fill_enum(std::vector<Token>* tokens);
 doc_struct fill_struct(std::vector<Token>* tokens);
+
+void print_structure(doc_struct structure);
