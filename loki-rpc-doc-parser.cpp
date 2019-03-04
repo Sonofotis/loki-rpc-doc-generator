@@ -164,24 +164,17 @@ std::vector<Token> parse_rpc_doc()
   
   
   
-  FILE *out_fp = fopen("documentationbefore.txt", "w");
+  FILE *out_fp = fopen("documentation.txt", "w");
   for (auto& token : token_list)
   {
     fprintf(out_fp, "%.*s - %u\n", token.len, token.str, token.type);
   }
   
   struct doc_struct main_struct = fill_struct(&token_list);
-  
-  FILE *out_fp2 = fopen("documentationafter.txt", "w");
-  for (auto& token : token_list)
-  {
-    fprintf(out_fp2, "%.*s - %u\n", token.len, token.str, token.type);
-  }
-  
-  print_structure(main_struct);
+
+  generate_html_doc(main_struct);
   
   fclose(out_fp);
-  fclose(out_fp2);
   fclose(core_rpc_doc);
   free(buf);
   
@@ -234,6 +227,7 @@ doc_var fill_var(std::vector<Token>* tokens)
       tokens->erase(tokens->begin());
       if ((tokens->at(0)).type == CommentString)
       {
+        var.has_comment = true;
         var.comment = (tokens->at(0)).str;
         var.comment_len = (tokens->at(0)).len;
         tokens->erase(tokens->begin());
@@ -241,6 +235,7 @@ doc_var fill_var(std::vector<Token>* tokens)
       }
       else 
       {
+        var.has_comment = false;
         return var;
       }
     }
@@ -303,15 +298,6 @@ doc_struct fill_struct(std::vector<Token>* tokens)
     }
   }
   return structure;
-}
-
-void print_structure(doc_struct structure)
-{
-  printf("--- Structure Name: %.*s ---\n\n", structure.name_len, structure.name);
-  for (auto& struc : structure.inner_structs)
-  {
-    print_structure(struc);
-  }
 }
 
 void next_token(char *s[])
@@ -486,4 +472,121 @@ bool type_definition(char *s[])
   }
   *s = original;
   return false;
+}
+
+void generate_html_doc(doc_struct structure)
+{
+  int curr_max = 1000000;
+  char* output = (char*) malloc(sizeof(char)*curr_max);
+  strcpy(output, 
+    "<!DOCTYPE html>\n<html>\n<head></head>\n<body>\n\n"
+    "<h2>Introduction</h2>\n\n" 
+    "<p>This is a list of the lokid daemon RPC calls, their inputs and outputs, and examples of each.\n\n" 
+    "Many RPC calls use the daemon's JSON RPC interface while others use their own interfaces, as demonstrated below.\n\n" 
+    "Note: \"atomic units\" refer to the smallest fraction of 1 LOKI according to the lokid implementation. 1 LOKI = 1e12 atomic units.</p>\n\n"
+    "<h3>RPC Methods</h3>\n\n"
+    "<ul>\n");
+  
+  for (auto& struc : structure.inner_structs)
+  {
+    char* add_str = (char*) malloc(sizeof(char) * (struc.name_len + 9));
+    sprintf(add_str, "  <li>%.*s</li>\n", struc.name_len, struc.name);
+    if (strstr(add_str, "COMMAND_RPC") != NULL)
+    {
+      strcat(output, add_str);
+    }
+  }
+  strcat(output, "</ul>\n\n");
+  
+  for (auto& struc : structure.inner_structs) 
+  {
+    char* outer_name = (char*) malloc(sizeof(char) * (struc.name_len + 11));
+    sprintf(outer_name, "<h3>%.*s</h3>\n\n", struc.name_len, struc.name);
+    strcat(output, outer_name);
+    
+    strcat(output, "<p>Inputs: ");    
+    for (auto& inner : struc.inner_structs)
+    {
+      char* inner_name = (char*) malloc(sizeof(char) * inner.name_len);
+      sprintf(inner_name, "%.*s", inner.name_len, inner.name);
+      if (strcmp(inner_name, "request") == 0)
+      {
+        if (inner.variables.size() > 0)
+        {
+          strcat(output, "</p>\n<ul>\n");
+          for (auto& var : inner.variables)
+          {
+            char* curr_type = (char*) malloc(sizeof(char) * var.type_len);
+            char* curr_vname = (char*) malloc(sizeof(char) * var.name_len);
+            char* curr_comm = (char*) malloc(sizeof(char) * var.comment_len);
+            char* entry_str = (char*) malloc(sizeof(char) * (var.comment_len + var.name_len + var.type_len + 17));
+            
+            sprintf(curr_type, "%.*s", var.type_len, var.type);
+            sprintf(curr_vname, "%.*s", var.name_len, var.name);
+            sprintf(curr_comm, "%.*s", var.comment_len, var.comment);
+            
+            if (var.has_comment)
+            {
+              sprintf(entry_str, "  <li>%s - %s; %s</li>\n", curr_vname, curr_type, curr_comm);
+            }
+            else 
+            {
+              sprintf(entry_str, "  <li>%s - %s;</li>\n", curr_vname, curr_type);
+            }
+            
+            strcat(output, entry_str);
+          }
+          strcat(output, "</ul>\n\n");
+          strcat(output, "<p>Outputs: ");
+        }
+        else
+        {
+          strcat(output, "None.</p>\n\n");
+          strcat(output, "<p>Outputs: ");
+        }    
+      }
+      if (strcmp(inner_name, "response") == 0)
+      {
+        if (inner.variables.size() > 0)
+        {
+          strcat(output, "</p>\n<ul>\n");
+          for (auto& var : inner.variables)
+          {
+            char* curr_type = (char*) malloc(sizeof(char) * var.type_len);
+            char* curr_vname = (char*) malloc(sizeof(char) * var.name_len);
+            char* curr_comm = (char*) malloc(sizeof(char) * var.comment_len);
+            char* entry_str = (char*) malloc(sizeof(char) * (var.comment_len + var.name_len + var.type_len + 17));
+            
+            sprintf(curr_type, "%.*s", var.type_len, var.type);
+            sprintf(curr_vname, "%.*s", var.name_len, var.name);
+            sprintf(curr_comm, "%.*s", var.comment_len, var.comment);
+            
+            if (var.has_comment)
+            {
+              sprintf(entry_str, "  <li>%s - %s; %s</li>\n", curr_vname, curr_type, curr_comm);
+            }
+            else 
+            {
+              sprintf(entry_str, "  <li>%s - %s;</li>\n", curr_vname, curr_type);
+            }
+            
+            strcat(output, entry_str);
+          }
+          strcat(output, "</ul>\n\n");
+        }
+        else
+        {
+          strcat(output, "None.</p>\n\n");
+        }    
+      }
+    }
+  }
+  
+  strcat(output, "</body>\n</html>");
+  
+  FILE *out = fopen("docs.html", "w");
+  fprintf(out, "%s", output);
+  
+  fclose(out);
+  free(output);
 }

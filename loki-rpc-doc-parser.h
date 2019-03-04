@@ -32,6 +32,7 @@ struct doc_var
   int name_len;
   const char *comment;
   int comment_len;
+  bool has_comment;
 };
 
 struct doc_enum
@@ -82,3 +83,5 @@ doc_enum fill_enum(std::vector<Token>* tokens);
 doc_struct fill_struct(std::vector<Token>* tokens);
 
 void print_structure(doc_struct structure);
+
+void generate_html_doc(doc_struct structure);
