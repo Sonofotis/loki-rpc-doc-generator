@@ -5,3 +5,6 @@ This parser will generate two files:
 - docs.html: The HTML file featuring a rudimentary description of input and output variables for each RPC method
 
 See 'Issues' for a description of all notable drawbacks of this parser as is.
+
+The ultimate goal of this parser is to generate documentation identical to the standard of that on:
+https://loki-project.github.io/loki-docs/Developer/DaemonRPCGuide/
