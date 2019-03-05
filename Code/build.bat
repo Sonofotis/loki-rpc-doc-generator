@@ -1,7 +1,7 @@
 @echo OFF
 
-if not exist Bin mkdir Bin
-pushd Bin
+if not exist ..\Bin mkdir ..\Bin
+pushd ..\Bin
 
 REM MT     Static CRT
 REM EHa-   Disable exception handling
@@ -12,6 +12,6 @@ REM Z7     Combine multi-debug files to one debug file
 REM wd4201 Nonstandard extension used: nameless struct/union
 REM Tp     Treat header file as CPP source file
 REM FC     Use absolute paths in error messages
-cl /MT /EHa /GR- /Od /Oi /Z7 /W4 /WX /FC ../loki_rpc_doc_generator.cpp /link /nologo
+cl /MT /EHa /GR- /Od /Oi /Z7 /W4 /WX /FC ..\Code\loki_rpc_doc_generator.cpp /link /nologo
 
 popd
