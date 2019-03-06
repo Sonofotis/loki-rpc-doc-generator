@@ -20,9 +20,12 @@
 // SOFTWARE.
 //
 
-#include <assert.h>
-#include <ctype.h>
 #include <vector>
+#include <assert.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 template <typename proc_t>
 struct defer
@@ -41,10 +44,10 @@ struct defer_helper
 #define TOKEN_COMBINE2(x, y) x ## y
 #define TOKEN_COMBINE(x, y) TOKEN_COMBINE2(x, y)
 #define DEFER const auto TOKEN_COMBINE2(defer_lambda_, __COUNTER__) = defer_helper() + [&]()
+#define MIN_VAL(a, b) (a) < (b) ? a : b
 
 #define ARRAY_COUNT(array) sizeof(array)/sizeof(array[0])
 #define CHAR_COUNT(str) (ARRAY_COUNT(str) - 1)
-#define STRING_LIT(str) {str, CHAR_COUNT(str)}
 
 enum struct token_type
 {
@@ -65,13 +68,15 @@ enum struct token_type
 struct string_lit
 {
     string_lit() = default;
-    string_lit(char *str_, int len_) : str(str_), len(len_) {}
-    char     *str;
-    int       len;
+    string_lit(char const *str_, int len_) : str(str_), len(len_) {}
+    char const *str;
+    int         len;
 };
+#define STRING_LIT(str) {str, CHAR_COUNT(str)}
 
 struct decl_var
 {
+  string_lit template_expr;
   string_lit type;
   string_lit name;
   string_lit comment;
@@ -117,3 +122,10 @@ struct tokeniser_t
     size_t tokens_index;
     int    indent_level;
 };
+
+struct type_conversion
+{
+    string_lit const from;
+    string_lit const to;
+};
+

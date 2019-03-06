@@ -2,8 +2,7 @@
 A self contained tool that only depends on the C++ standard library to auto-generate documentation for RPC commands used in the Loki daemon.
 
 ## Building
-Use the supplied build scripts `build.bat` or `build.sh`, or simply invoke the compiler on the single CPP file.
-
+Use the supplied build scripts `build_msvc.bat` (for Visual Studio) or `build_gcc.sh` (for GCC), or simply invoke the compiler on the single CPP file.
 The build script compiles the executable to the Bin folder at the root of this repository.
 
 ## Usage

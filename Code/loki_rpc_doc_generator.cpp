@@ -2,6 +2,17 @@
 
 #include "loki_rpc_doc_generator.h"
 
+type_conversion const TYPE_CONVERSION_TABLE[] =
+{
+    {STRING_LIT("std::string"), STRING_LIT("string")},
+    {STRING_LIT("uint64_t"),    STRING_LIT("u64")},
+    {STRING_LIT("uint32_t"),    STRING_LIT("u32")},
+    {STRING_LIT("uint16_t"),    STRING_LIT("u8")},
+    {STRING_LIT("uint8_t"),     STRING_LIT("u8")},
+    {STRING_LIT("int64_t"),     STRING_LIT("i64")},
+    {STRING_LIT("blobdata"),    STRING_LIT("string")},
+};
+
 bool string_lit_cmp(string_lit a, string_lit b)
 {
     bool result = (a.len == b.len && (strncmp(a.str, b.str, a.len) == 0));
@@ -249,6 +260,24 @@ decl_struct fill_struct(tokeniser_t *tokeniser)
                 variable.name       = token_to_string_lit(var_decl);
                 variable.type       = trim_whitespace_around(variable.type);
 
+                for (int i = 0; i < variable.type.len; ++i)
+                {
+                    if (variable.type.str[i] == '<')
+                    {
+                        variable.template_expr.str = variable.type.str + (++i);
+                        for (int j = ++i; j < variable.type.len; ++j)
+                        {
+                            if (variable.type.str[j] == '>')
+                            {
+                                char const *template_expr_end = variable.type.str + j;
+                                variable.template_expr.len    = static_cast<int>(template_expr_end - variable.template_expr.str);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+
                 token = tokeniser_next_token(tokeniser);
                 if (token.type != token_type::semicolon)
                     continue;
@@ -270,6 +299,33 @@ decl_struct fill_struct(tokeniser_t *tokeniser)
     }
 
     return result;
+}
+
+void fprint_variable(decl_var const &variable)
+{
+    bool is_array              = variable.template_expr.len > 0;
+    string_lit const *var_type = &variable.type;
+    if (is_array) var_type     = &variable.template_expr;
+
+    for (int i = 0; i < ARRAY_COUNT(TYPE_CONVERSION_TABLE); ++i)
+    {
+        type_conversion const *conversion = TYPE_CONVERSION_TABLE + i;
+        if (conversion->from.len < var_type->len) continue;
+
+        if (strncmp(conversion->from.str, var_type->str, MIN_VAL(conversion->from.len, var_type->len)) == 0)
+        {
+            var_type = &conversion->to;
+            break;
+        }
+    }
+
+    fprintf(stdout, "    <li>%.*s", var_type->len, var_type->str);
+    if (is_array) fprintf(stdout, "[]");
+
+    fprintf(stdout, " - %.*s", variable.name.len, variable.name.str);
+    if (variable.comment.len > 0) fprintf(stdout, " - %.*s", variable.comment.len, variable.comment.str);
+
+    fprintf(stdout, "</li>\n");
 }
 
 void generate_html_doc(std::vector<decl_struct> const *declarations)
@@ -306,16 +362,11 @@ void generate_html_doc(std::vector<decl_struct> const *declarations)
             continue;
         }
 
+
         if (global_decl.type != decl_struct_type::rpc_command)
         {
             // TODO(doyle): Warning, unexpected non-rpc command in global scope
             continue;
-        }
-
-        if (string_lit_cmp(global_decl.name, STRING_LIT("COMMAND_RPC_GET_SERVICE_NODES")))
-        {
-            int break_here = 5;
-            (void)break_here;
         }
 
         decl_struct const *request  = nullptr;
@@ -342,35 +393,13 @@ void generate_html_doc(std::vector<decl_struct> const *declarations)
         fprintf(stdout, "<p>Inputs:</p>\n");
         fprintf(stdout, "<ul>\n");
         for (decl_var const &variable : request->variables)
-        {
-            fprintf(stdout,
-                    "    <li>%.*s - %.*s",
-                    variable.type.len, variable.type.str,
-                    variable.name.len, variable.name.str);
-
-            if (variable.comment.len > 0)
-                fprintf(stdout, " - %.*s", variable.comment.len, variable.comment.str);
-
-            fprintf(stdout, "</li>\n");
-
-        }
+            fprint_variable(variable);
         fprintf(stdout, "</ul>\n\n");
 
-        fprintf(stdout, "<p>Inputs:</p>\n");
+        fprintf(stdout, "<p>Outputs:</p>\n");
         fprintf(stdout, "<ul>\n");
         for (decl_var const &variable : response->variables)
-        {
-            fprintf(stdout,
-                    "    <li>%.*s - %.*s",
-                    variable.type.len, variable.type.str,
-                    variable.name.len, variable.name.str);
-
-            if (variable.comment.len > 0)
-                fprintf(stdout, ": %.*s", variable.comment.len, variable.comment.str);
-
-            fprintf(stdout, "</li>\n");
-
-        }
+            fprint_variable(variable);
         fprintf(stdout, "</ul>\n\n");
     }
 
@@ -397,16 +426,15 @@ int main(int argc, char *argv[])
         declarations.clear();
         token_list.clear();
 
+        ptrdiff_t buf_size = 0;
+        char *buf          = read_entire_file(argv[arg_index], &buf_size);
+        if (!buf) continue; // TODO(doyle): Log
+        DEFER { free(buf); };
+
         //
         // Lex File into token_list
         //
         {
-            ptrdiff_t buf_size = 0;
-            char *buf          = read_entire_file(argv[arg_index], &buf_size);
-            if (!buf)
-                continue;
-
-            DEFER { free(buf); };
             string_lit const GENERATOR_START = STRING_LIT("GENERATE_LOKI_DOCS");
             char *ptr = str_find(buf, GENERATOR_START);
             ptr      += GENERATOR_START.len;
