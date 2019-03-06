@@ -75,6 +75,7 @@ struct string_lit
 
 struct decl_var
 {
+  string_lit template_expr;
   string_lit type;
   string_lit name;
   string_lit comment;

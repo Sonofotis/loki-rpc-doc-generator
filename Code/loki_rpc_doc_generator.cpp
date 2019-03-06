@@ -249,6 +249,24 @@ decl_struct fill_struct(tokeniser_t *tokeniser)
                 variable.name       = token_to_string_lit(var_decl);
                 variable.type       = trim_whitespace_around(variable.type);
 
+                for (int i = 0; i < variable.type.len; ++i)
+                {
+                    if (variable.type.str[i] == '<')
+                    {
+                        variable.template_expr.str = variable.type.str + (++i);
+                        for (int j = ++i; j < variable.type.len; ++j)
+                        {
+                            if (variable.type.str[j] == '>')
+                            {
+                                char const *template_expr_end = variable.type.str + j;
+                                variable.template_expr.len    = static_cast<int>(template_expr_end - variable.template_expr.str);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+
                 token = tokeniser_next_token(tokeniser);
                 if (token.type != token_type::semicolon)
                     continue;
@@ -306,16 +324,11 @@ void generate_html_doc(std::vector<decl_struct> const *declarations)
             continue;
         }
 
+
         if (global_decl.type != decl_struct_type::rpc_command)
         {
             // TODO(doyle): Warning, unexpected non-rpc command in global scope
             continue;
-        }
-
-        if (string_lit_cmp(global_decl.name, STRING_LIT("COMMAND_RPC_GET_SERVICE_NODES")))
-        {
-            int break_here = 5;
-            (void)break_here;
         }
 
         decl_struct const *request  = nullptr;
@@ -343,28 +356,25 @@ void generate_html_doc(std::vector<decl_struct> const *declarations)
         fprintf(stdout, "<ul>\n");
         for (decl_var const &variable : request->variables)
         {
-            fprintf(stdout,
-                    "    <li>%.*s - %.*s",
-                    variable.type.len, variable.type.str,
-                    variable.name.len, variable.name.str);
+            if (variable.template_expr.len > 0) fprintf(stdout, "    <li>%.*s[]", variable.template_expr.len, variable.template_expr.str);
+            else                                fprintf(stdout, "    <li>%.*s", variable.type.len,          variable.type.str);
 
+            fprintf(stdout, " - %.*s", variable.name.len, variable.name.str);
             if (variable.comment.len > 0)
                 fprintf(stdout, " - %.*s", variable.comment.len, variable.comment.str);
 
             fprintf(stdout, "</li>\n");
-
         }
         fprintf(stdout, "</ul>\n\n");
 
-        fprintf(stdout, "<p>Inputs:</p>\n");
+        fprintf(stdout, "<p>Outputs:</p>\n");
         fprintf(stdout, "<ul>\n");
         for (decl_var const &variable : response->variables)
         {
-            fprintf(stdout,
-                    "    <li>%.*s - %.*s",
-                    variable.type.len, variable.type.str,
-                    variable.name.len, variable.name.str);
+            if (variable.template_expr.len > 0) fprintf(stdout, "    <li>%.*s[]", variable.template_expr.len, variable.template_expr.str);
+            else                                fprintf(stdout, "    <li>%.*s",   variable.type.len,          variable.type.str);
 
+            fprintf(stdout, " - %.*s", variable.name.len, variable.name.str);
             if (variable.comment.len > 0)
                 fprintf(stdout, ": %.*s", variable.comment.len, variable.comment.str);
 
