@@ -319,37 +319,31 @@ void fprint_variable(decl_var const &variable)
         }
     }
 
-    fprintf(stdout, "    <li>%.*s", var_type->len, var_type->str);
+    fprintf(stdout, " * %.*s", var_type->len, var_type->str);
     if (is_array) fprintf(stdout, "[]");
 
     fprintf(stdout, " - %.*s", variable.name.len, variable.name.str);
     if (variable.comment.len > 0) fprintf(stdout, " - %.*s", variable.comment.len, variable.comment.str);
 
-    fprintf(stdout, "</li>\n");
+    fprintf(stdout, "\n");
 }
 
 void generate_html_doc(std::vector<decl_struct> const *declarations)
 {
     fprintf(stdout,
-           "<!DOCTYPE html>\n"
-           "<html>\n"
-           "<head></head>\n"
-           "<body>\n\n"
-           "<h2>Introduction</h2>\n\n"
-           "<p>This is a list of the lokid daemon RPC calls, their inputs and outputs, and examples of each.\n\n"
-           "Many RPC calls use the daemon's JSON RPC interface while others use their own interfaces, as demonstrated "
-           "below.\n\n"
-           "Note: \"atomic units\" refer to the smallest fraction of 1 LOKI according to the lokid implementation. 1 "
-           "LOKI = 1e12 atomic units.</p>\n\n"
-           "<h3>RPC Methods</h3>\n\n"
-           "<ul>\n");
+           "# Introduction\n\n"
+           "This is a list of the lokid daemon RPC calls, their inputs and outputs, and examples of each.\n\n"
+           "Many RPC calls use the daemon's JSON RPC interface while others use their own interfaces, as demonstrated below.\n\n"
+           "Note: \"atomic units\" refer to the smallest fraction of 1 LOKI according to the lokid implementation. 1 LOKI = 1e12 atomic units.\n\n"
+           "## RPC Methods\n\n"
+           );
 
     for (decl_struct const &decl : (*declarations))
     {
         if (decl.type == decl_struct_type::rpc_command)
-            fprintf(stdout, "  <li>%.*s</li>\n", decl.name.len, decl.name.str);
+            fprintf(stdout, " * [%.*s](#%.*s) \n", decl.name.len, decl.name.str, decl.name.len, decl.name.str);
     }
-    fprintf(stdout, "</ul>\n\n");
+    fprintf(stdout, "\n\n");
 
     std::vector<decl_struct const *> global_helper_structs;
     std::vector<decl_struct const *> rpc_decl_helper_structs;
@@ -389,21 +383,21 @@ void generate_html_doc(std::vector<decl_struct> const *declarations)
             continue;
         }
 
-        fprintf(stdout, "<h3>%.*s</h3>\n", global_decl.name.len, global_decl.name.str);
-        fprintf(stdout, "<p>Inputs:</p>\n");
-        fprintf(stdout, "<ul>\n");
+        fprintf(stdout, "###%.*s \n\n", global_decl.name.len, global_decl.name.str);
+        fprintf(stdout, "**Inputs:**\n");
+        fprintf(stdout, "\n");
         for (decl_var const &variable : request->variables)
             fprint_variable(variable);
-        fprintf(stdout, "</ul>\n\n");
+        fprintf(stdout, "\n");
 
-        fprintf(stdout, "<p>Outputs:</p>\n");
-        fprintf(stdout, "<ul>\n");
+        fprintf(stdout, "**Outputs:**\n");
+        fprintf(stdout, "\n");
         for (decl_var const &variable : response->variables)
             fprint_variable(variable);
-        fprintf(stdout, "</ul>\n\n");
+        fprintf(stdout, "\n\n");
     }
 
-    fprintf(stdout, "</body>\n</html>");
+    fprintf(stdout, "\n");
 }
 
 char *next_token(char *src)
