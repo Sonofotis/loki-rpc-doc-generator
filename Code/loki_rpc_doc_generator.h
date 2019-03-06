@@ -44,6 +44,7 @@ struct defer_helper
 #define TOKEN_COMBINE2(x, y) x ## y
 #define TOKEN_COMBINE(x, y) TOKEN_COMBINE2(x, y)
 #define DEFER const auto TOKEN_COMBINE2(defer_lambda_, __COUNTER__) = defer_helper() + [&]()
+#define MIN_VAL(a, b) (a) < (b) ? a : b
 
 #define ARRAY_COUNT(array) sizeof(array)/sizeof(array[0])
 #define CHAR_COUNT(str) (ARRAY_COUNT(str) - 1)
@@ -121,3 +122,10 @@ struct tokeniser_t
     size_t tokens_index;
     int    indent_level;
 };
+
+struct type_conversion
+{
+    string_lit const from;
+    string_lit const to;
+};
+
