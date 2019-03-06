@@ -397,16 +397,15 @@ int main(int argc, char *argv[])
         declarations.clear();
         token_list.clear();
 
+        ptrdiff_t buf_size = 0;
+        char *buf          = read_entire_file(argv[arg_index], &buf_size);
+        if (!buf) continue; // TODO(doyle): Log
+        DEFER { free(buf); };
+
         //
         // Lex File into token_list
         //
         {
-            ptrdiff_t buf_size = 0;
-            char *buf          = read_entire_file(argv[arg_index], &buf_size);
-            if (!buf)
-                continue;
-
-            DEFER { free(buf); };
             string_lit const GENERATOR_START = STRING_LIT("GENERATE_LOKI_DOCS");
             char *ptr = str_find(buf, GENERATOR_START);
             ptr      += GENERATOR_START.len;
