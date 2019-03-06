@@ -20,9 +20,12 @@
 // SOFTWARE.
 //
 
-#include <assert.h>
-#include <ctype.h>
 #include <vector>
+#include <assert.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 template <typename proc_t>
 struct defer
@@ -44,7 +47,6 @@ struct defer_helper
 
 #define ARRAY_COUNT(array) sizeof(array)/sizeof(array[0])
 #define CHAR_COUNT(str) (ARRAY_COUNT(str) - 1)
-#define STRING_LIT(str) {str, CHAR_COUNT(str)}
 
 enum struct token_type
 {
@@ -65,10 +67,11 @@ enum struct token_type
 struct string_lit
 {
     string_lit() = default;
-    string_lit(char *str_, int len_) : str(str_), len(len_) {}
-    char     *str;
-    int       len;
+    string_lit(char const *str_, int len_) : str(str_), len(len_) {}
+    char const *str;
+    int         len;
 };
+#define STRING_LIT(str) {str, CHAR_COUNT(str)}
 
 struct decl_var
 {
