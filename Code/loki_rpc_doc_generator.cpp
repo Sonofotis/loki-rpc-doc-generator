@@ -318,13 +318,12 @@ void fprint_variable(decl_var const &variable)
             break;
         }
     }
-
     fprintf(stdout, " * %.*s", var_type->len, var_type->str);
     if (is_array) fprintf(stdout, "[]");
-
-    fprintf(stdout, " - %.*s", variable.name.len, variable.name.str);
-    if (variable.comment.len > 0) fprintf(stdout, " - %.*s", variable.comment.len, variable.comment.str);
-
+    fprintf(stdout, " * **%.*s**", variable.name.len, variable.name.str);
+    fprintf(stdout, " - %.*s", var_type->len, var_type->str);
+    if (is_array) fprintf(stdout, "[]");
+    if (variable.comment.len > 0) fprintf(stdout, " ; %.*s", variable.comment.len, variable.comment.str);
     fprintf(stdout, "\n");
 }
 
