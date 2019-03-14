@@ -58,10 +58,13 @@ enum struct token_type
     fwd_slash,
     semicolon,
     colon,
+    open_paren,
+    close_paren,
     namespace_colon,
     comment,
     less_than,
     greater_than,
+    equal,
     end_of_stream,
 };
 

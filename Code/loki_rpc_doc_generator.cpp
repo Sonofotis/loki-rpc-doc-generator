@@ -159,6 +159,18 @@ token_t tokeniser_next_token(tokeniser_t *tokeniser, int amount = 1)
     return result;
 }
 
+token_t tokeniser_advance_until_token(tokeniser_t *tokeniser, token_type type)
+{
+    token_t result = {};
+    for (result = tokeniser_next_token(tokeniser);
+         result.type != token_type::end_of_stream && result.type != type;
+         result = tokeniser_next_token(tokeniser)
+        )
+    {
+    }
+    return result;
+}
+
 bool is_identifier_token(token_t token, string_lit expect_str)
 {
     bool result = (token.type == token_type::identifier) && (string_lit_cmp(token_to_string_lit(token), expect_str));
@@ -240,18 +252,46 @@ decl_struct fill_struct(tokeniser_t *tokeniser)
             }
             else
             {
+                bool member_function = false;
                 char *type_decl_start = token.str;
-
                 token_t var_decl = {};
                 for (token_t sub_token = tokeniser_peek_token(tokeniser);; sub_token = tokeniser_peek_token(tokeniser))
                 {
-                    if (sub_token.type == token_type::semicolon)
+                    // Member function decl
+                    if (sub_token.type == token_type::open_paren)
+                    {
+                      sub_token       = tokeniser_next_token(tokeniser);
+                      member_function = true;
+
+                      for (sub_token = tokeniser_next_token(tokeniser);; sub_token = tokeniser_next_token(tokeniser))
+                      {
+                        if (sub_token.type == token_type::semicolon)
+                          break;
+
+                        // Inline function decl
+                        if (sub_token.type == token_type::left_curly_brace)
+                        {
+                          int orig_scope_level = tokeniser->indent_level - 1;
+                          assert(orig_scope_level >= 0);
+
+                          while (tokeniser->indent_level != orig_scope_level)
+                            sub_token = tokeniser_next_token(tokeniser);
+                          break;
+                        }
+                      }
+
+                    }
+
+                    if (sub_token.type == token_type::semicolon || sub_token.type == token_type::equal)
                     {
                         var_decl = tokeniser_prev_token(tokeniser);
                         break;
                     }
                     sub_token = tokeniser_next_token(tokeniser);
                 }
+
+                if (member_function)
+                  continue;
 
                 char *type_decl_end = var_decl.str - 1;
                 decl_var variable   = {};
@@ -280,7 +320,7 @@ decl_struct fill_struct(tokeniser_t *tokeniser)
 
                 token = tokeniser_next_token(tokeniser);
                 if (token.type != token_type::semicolon)
-                    continue;
+                   token = tokeniser_advance_until_token(tokeniser, token_type::semicolon);
 
                 token = tokeniser_peek_token(tokeniser);
                 if (token.type == token_type::comment)
@@ -301,28 +341,74 @@ decl_struct fill_struct(tokeniser_t *tokeniser)
     return result;
 }
 
-void fprint_variable(decl_var const &variable)
+string_lit const *convert_cpp_type_with_conversion_table(string_lit const type_name)
 {
-    bool is_array              = variable.template_expr.len > 0;
-    string_lit const *var_type = &variable.type;
-    if (is_array) var_type     = &variable.template_expr;
+  string_lit const *result = nullptr;
+  for (int i = 0; i < ARRAY_COUNT(TYPE_CONVERSION_TABLE); ++i)
+  {
+      type_conversion const *conversion = TYPE_CONVERSION_TABLE + i;
+      if (conversion->from.len < type_name.len) continue;
 
-    for (int i = 0; i < ARRAY_COUNT(TYPE_CONVERSION_TABLE); ++i)
+      if (string_lit_cmp(conversion->from, type_name))
+      {
+          result = &conversion->to;
+          break;
+      }
+  }
+
+  return result;
+};
+
+void fprint_variable(std::vector<decl_struct const *> *global_helper_structs, std::vector<decl_struct const *> *rpc_helper_structs, decl_var const *variable, int indent_level = 0)
+{
+    bool is_array              = variable->template_expr.len > 0;
+    string_lit const *var_type = &variable->type;
+    if (is_array) var_type     = &variable->template_expr;
+
+    string_lit const *converted_type = convert_cpp_type_with_conversion_table(*var_type);
+    if (converted_type)
+      var_type = converted_type;
+
+    for (int i = 0; i < indent_level * 2; i++)
+      fprintf(stdout, " ");
+
+    fprintf(stdout, " * **%.*s** - %.*s", variable->name.len, variable->name.str, var_type->len, var_type->str);
+    if (is_array) fprintf(stdout, "[]");
+    if (variable->comment.len > 0) fprintf(stdout, ": %.*s", variable->comment.len, variable->comment.str);
+    fprintf(stdout, "\n");
+
+    if (!converted_type)
     {
-        type_conversion const *conversion = TYPE_CONVERSION_TABLE + i;
-        if (conversion->from.len < var_type->len) continue;
-
-        if (strncmp(conversion->from.str, var_type->str, MIN_VAL(conversion->from.len, var_type->len)) == 0)
+        decl_struct const *resolved_decl = nullptr;
+        for (decl_struct const *decl : *global_helper_structs)
         {
-            var_type = &conversion->to;
-            break;
+            if (string_lit_cmp(*var_type, decl->name))
+            {
+              resolved_decl = decl;
+              break;
+            }
+        }
+
+        if (!resolved_decl)
+        {
+          for (decl_struct const *decl : *rpc_helper_structs)
+          {
+              if (string_lit_cmp(*var_type, decl->name))
+              {
+                resolved_decl = decl;
+                break;
+              }
+          }
+        }
+
+        if (resolved_decl)
+        {
+            ++indent_level;
+            for (decl_var const &inner_variable : resolved_decl->variables)
+                fprint_variable(global_helper_structs, rpc_helper_structs, &inner_variable, indent_level);
+
         }
     }
-    fprintf(stdout, " * **%.*s**", variable.name.len, variable.name.str);
-    fprintf(stdout, " - %.*s", var_type->len, var_type->str);
-    if (is_array) fprintf(stdout, "[]");
-    if (variable.comment.len > 0) fprintf(stdout, " ; %.*s", variable.comment.len, variable.comment.str);
-    fprintf(stdout, "\n");
 }
 
 void generate_html_doc(std::vector<decl_struct> const *declarations)
@@ -343,7 +429,7 @@ void generate_html_doc(std::vector<decl_struct> const *declarations)
     fprintf(stdout, "\n\n");
 
     std::vector<decl_struct const *> global_helper_structs;
-    std::vector<decl_struct const *> rpc_decl_helper_structs;
+    std::vector<decl_struct const *> rpc_helper_structs;
 
     for (decl_struct const &global_decl : (*declarations))
     {
@@ -362,14 +448,14 @@ void generate_html_doc(std::vector<decl_struct> const *declarations)
 
         decl_struct const *request  = nullptr;
         decl_struct const *response = nullptr;
-        rpc_decl_helper_structs.clear();
+        rpc_helper_structs.clear();
         for (auto &inner_decl : global_decl.inner_structs)
         {
             switch(inner_decl.type)
             {
                 case decl_struct_type::request: request   = &inner_decl; break;
                 case decl_struct_type::response: response = &inner_decl; break;
-                case decl_struct_type::helper: rpc_decl_helper_structs.push_back(&inner_decl); break;
+                case decl_struct_type::helper: rpc_helper_structs.push_back(&inner_decl); break;
                 default: break; // TODO(doyle): Warning unexpected decl inside rpc declaration
             }
         }
@@ -384,13 +470,13 @@ void generate_html_doc(std::vector<decl_struct> const *declarations)
         fprintf(stdout, "**Inputs:**\n");
         fprintf(stdout, "\n");
         for (decl_var const &variable : request->variables)
-            fprint_variable(variable);
+            fprint_variable(&global_helper_structs, &rpc_helper_structs, &variable);
         fprintf(stdout, "\n");
 
         fprintf(stdout, "**Outputs:**\n");
         fprintf(stdout, "\n");
         for (decl_var const &variable : response->variables)
-            fprint_variable(variable);
+            fprint_variable(&global_helper_structs, &rpc_helper_structs, &variable);
         fprintf(stdout, "\n\n");
     }
 
@@ -451,8 +537,11 @@ int main(int argc, char *argv[])
                       case '{': curr_token.type = token_type::left_curly_brace; started_parsing_scope = true; scope_level++; break;
                       case '}': curr_token.type = token_type::right_curly_brace; scope_level--; break;
                       case ';': curr_token.type = token_type::semicolon; break;
+                      case '=': curr_token.type = token_type::equal; break;
                       case '<': curr_token.type = token_type::less_than; break;
                       case '>': curr_token.type = token_type::greater_than; break;
+                      case '(': curr_token.type = token_type::open_paren; break;
+                      case ')': curr_token.type = token_type::close_paren; break;
 
                       case ':':
                       {
