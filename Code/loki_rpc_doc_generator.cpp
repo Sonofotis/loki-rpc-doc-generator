@@ -71,7 +71,7 @@ char *read_entire_file(char const *file_path, ptrdiff_t *file_size)
 
 char *str_find(char *start, string_lit find)
 {
-    for (char *ptr = start; ptr; ptr++)
+    for (char *ptr = start; ptr && ptr[0]; ptr++)
     {
         if (strncmp(ptr, find.str, find.len) == 0)
             return ptr;
@@ -426,96 +426,105 @@ int main(int argc, char *argv[])
         // Lex File into token_list
         //
         {
-            string_lit const GENERATOR_START = STRING_LIT("GENERATE_LOKI_DOCS");
-            char *ptr = str_find(buf, GENERATOR_START);
-            ptr      += GENERATOR_START.len;
-            for (;ptr && *ptr;)
+            string_lit const GENERATOR_START = STRING_LIT("LOKI_RPC_DOC_INTROSPECT");
+            char *ptr = buf;
+            for (ptr = str_find(ptr, GENERATOR_START);
+                 ptr;
+                 ptr = str_find(ptr, GENERATOR_START))
             {
-                token_t curr_token = {};
-                curr_token.str   = next_token(ptr);
-                curr_token.len   = 1;
-                ptr              = curr_token.str + 1;
-                switch(curr_token.str[0])
-                {
-                    case '{': curr_token.type = token_type::left_curly_brace; break;
-                    case '}': curr_token.type = token_type::right_curly_brace; break;
-                    case ';': curr_token.type = token_type::semicolon; break;
-                    case '<': curr_token.type = token_type::less_than; break;
-                    case '>': curr_token.type = token_type::greater_than; break;
-
-                    case ':':
-                    {
-                        curr_token.type = token_type::colon;
-                        if (ptr[0] == ':')
-                        {
-                            ptr++;
-                            curr_token.type = token_type::namespace_colon;
-                            curr_token.len  = 2;
-                        }
-                    }
+              ptr += GENERATOR_START.len;
+              bool started_parsing_scope = false;
+              int scope_level = 0;
+              for (;ptr && *ptr;)
+              {
+                  if (started_parsing_scope && scope_level == 0)
+                  {
                     break;
+                  }
 
-                    case '/':
-                    {
-                        curr_token.type = token_type::fwd_slash;
-                        if (ptr[0] == '/' || ptr[0] == '*')
-                        {
-                            curr_token.type = token_type::comment;
-                            if (ptr[0] == '/')
-                            {
-                                ptr++;
-                                while (ptr[0] == ' ' || ptr[0] == '\t') ptr++;
-                                curr_token.str = ptr;
-                                while (ptr[0] != '\n' && ptr[0] != '\r') ptr++;
-                            }
-                            else
-                            {
-                                for (;;)
-                                {
-                                    while (ptr[0] != '*') ptr++;
-                                    ptr++;
-                                    if (ptr[0] == '\\') break;
-                                    curr_token.len = static_cast<int>(ptr - curr_token.str);
-                                }
-                            }
+                  token_t curr_token = {};
+                  curr_token.str   = next_token(ptr);
+                  curr_token.len   = 1;
+                  ptr              = curr_token.str + 1;
+                  switch(curr_token.str[0])
+                  {
+                      case '{': curr_token.type = token_type::left_curly_brace; started_parsing_scope = true; scope_level++; break;
+                      case '}': curr_token.type = token_type::right_curly_brace; scope_level--; break;
+                      case ';': curr_token.type = token_type::semicolon; break;
+                      case '<': curr_token.type = token_type::less_than; break;
+                      case '>': curr_token.type = token_type::greater_than; break;
 
-                            curr_token.len = static_cast<int>(ptr - curr_token.str);
-                        }
-                    }
-                    break;
+                      case ':':
+                      {
+                          curr_token.type = token_type::colon;
+                          if (ptr[0] == ':')
+                          {
+                              ptr++;
+                              curr_token.type = token_type::namespace_colon;
+                              curr_token.len  = 2;
+                          }
+                      }
+                      break;
 
-                    default:
-                    {
-                        curr_token.type = token_type::identifier;
-                        if (char_is_alpha(ptr[0]) || ptr[0] == '_')
-                        {
-                            ptr++;
-                            while (char_is_alphanum(ptr[0]) || ptr[0] == '_') ptr++;
-                        }
-                        curr_token.len = static_cast<int>(ptr - curr_token.str);
-                    }
-                    break;
-                }
+                      case '/':
+                      {
+                          curr_token.type = token_type::fwd_slash;
+                          if (ptr[0] == '/' || ptr[0] == '*')
+                          {
+                              curr_token.type = token_type::comment;
+                              if (ptr[0] == '/')
+                              {
+                                  ptr++;
+                                  while (ptr[0] == ' ' || ptr[0] == '\t') ptr++;
+                                  curr_token.str = ptr;
+                                  while (ptr[0] != '\n' && ptr[0] != '\r') ptr++;
+                              }
+                              else
+                              {
+                                  for (;;)
+                                  {
+                                      while (ptr[0] != '*') ptr++;
+                                      ptr++;
+                                      if (ptr[0] == '\\') break;
+                                      curr_token.len = static_cast<int>(ptr - curr_token.str);
+                                  }
+                              }
 
-                string_lit token_lit = token_to_string_lit(curr_token);
-                if (curr_token.type == token_type::identifier)
-                {
-                    if (string_lit_cmp(token_lit, STRING_LIT("BEGIN_KV_SERIALIZE_MAP")))
-                    {
-                        string_lit const END_STR = STRING_LIT("END_KV_SERIALIZE_MAP()");
-                        ptr                      = str_find(ptr, END_STR);
-                        ptr                     += END_STR.len;
-                        continue;
-                    }
-                    else if (string_lit_cmp(token_lit, STRING_LIT("STOP_GEN_LOKI_DOCS")))
-                    {
-                        break;
-                    }
-                }
+                              curr_token.len = static_cast<int>(ptr - curr_token.str);
+                          }
+                      }
+                      break;
 
-                assert(curr_token.type != token_type::invalid);
-                if (curr_token.len > 0)
-                    token_list.push_back(curr_token);
+                      default:
+                      {
+                          curr_token.type = token_type::identifier;
+                          if (char_is_alpha(ptr[0]) || ptr[0] == '_')
+                          {
+                              ptr++;
+                              while (char_is_alphanum(ptr[0]) || ptr[0] == '_') ptr++;
+                          }
+                          curr_token.len = static_cast<int>(ptr - curr_token.str);
+                      }
+                      break;
+                  }
+
+                  string_lit token_lit = token_to_string_lit(curr_token);
+                  if (curr_token.type == token_type::identifier)
+                  {
+                      if (string_lit_cmp(token_lit, STRING_LIT("BEGIN_KV_SERIALIZE_MAP")))
+                      {
+                          string_lit const END_STR = STRING_LIT("END_KV_SERIALIZE_MAP()");
+                          ptr                      = str_find(ptr, END_STR);
+                          ptr                     += END_STR.len;
+                          continue;
+                      }
+                  }
+
+                  assert(curr_token.type != token_type::invalid);
+                  if (curr_token.len > 0)
+                      token_list.push_back(curr_token);
+
+              }
             }
 
             token_t sentinel_token = {};
