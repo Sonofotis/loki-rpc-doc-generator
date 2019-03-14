@@ -338,7 +338,7 @@ void generate_html_doc(std::vector<decl_struct> const *declarations)
     for (decl_struct const &decl : (*declarations))
     {
         if (decl.type == decl_struct_type::rpc_command)
-            fprintf(stdout, " - [%.*s](#%.*s) \n", decl.name.len, decl.name.str, decl.name.len, decl.name.str);
+            fprintf(stdout, " - [%.*s](#%.*s)\n", decl.name.len, decl.name.str, decl.name.len, decl.name.str);
     }
     fprintf(stdout, "\n\n");
 
@@ -380,7 +380,7 @@ void generate_html_doc(std::vector<decl_struct> const *declarations)
             continue;
         }
 
-        fprintf(stdout, "###%.*s \n\n", global_decl.name.len, global_decl.name.str);
+        fprintf(stdout, "### %.*s\n\n", global_decl.name.len, global_decl.name.str);
         fprintf(stdout, "**Inputs:**\n");
         fprintf(stdout, "\n");
         for (decl_var const &variable : request->variables)
