@@ -205,6 +205,89 @@ bool tokeniser_accept_token_if_type(tokeniser_t *tokeniser, token_type type, tok
     return false;
 }
 
+bool parse_type_and_var_decl(tokeniser_t *tokeniser, decl_var *variable)
+{
+    token_t token = tokeniser_peek_token(tokeniser);
+
+    bool member_function = false;
+    char *type_decl_start = token.str;
+    token_t var_decl = {};
+    for (token_t sub_token = tokeniser_peek_token(tokeniser);; sub_token = tokeniser_peek_token(tokeniser))
+    {
+        // Member function decl
+        if (sub_token.type == token_type::open_paren)
+        {
+          sub_token       = tokeniser_next_token(tokeniser);
+          member_function = true;
+
+          for (sub_token = tokeniser_next_token(tokeniser);; sub_token = tokeniser_next_token(tokeniser))
+          {
+            if (sub_token.type == token_type::semicolon)
+              break;
+
+            // Inline function decl
+            if (sub_token.type == token_type::left_curly_brace)
+            {
+              int orig_scope_level = tokeniser->indent_level - 1;
+              assert(orig_scope_level >= 0);
+
+              while (tokeniser->indent_level != orig_scope_level)
+                sub_token = tokeniser_next_token(tokeniser);
+              break;
+            }
+          }
+
+        }
+
+        if (sub_token.type == token_type::semicolon || sub_token.type == token_type::equal)
+        {
+            var_decl = tokeniser_prev_token(tokeniser);
+            break;
+        }
+        sub_token = tokeniser_next_token(tokeniser);
+    }
+
+    if (member_function)
+      return false;
+
+    char *type_decl_end = var_decl.str - 1;
+    variable->type.str   = type_decl_start;
+    variable->type.len   = static_cast<int>(type_decl_end - type_decl_start);
+    variable->name       = token_to_string_lit(var_decl);
+    variable->type       = trim_whitespace_around(variable->type);
+
+    for (int i = 0; i < variable->type.len; ++i)
+    {
+        if (variable->type.str[i] == '<')
+        {
+            variable->template_expr.str = variable->type.str + (++i);
+            for (int j = ++i; j < variable->type.len; ++j)
+            {
+                if (variable->type.str[j] == '>')
+                {
+                    char const *template_expr_end = variable->type.str + j;
+                    variable->template_expr.len    = static_cast<int>(template_expr_end - variable->template_expr.str);
+                    break;
+                }
+            }
+            break;
+        }
+    }
+
+    token = tokeniser_next_token(tokeniser);
+    if (token.type != token_type::semicolon)
+       token = tokeniser_advance_until_token(tokeniser, token_type::semicolon);
+
+    token = tokeniser_peek_token(tokeniser);
+    if (token.type == token_type::comment)
+    {
+        variable->comment = token_to_string_lit(token);
+        token = tokeniser_next_token(tokeniser);
+    }
+
+    return true;
+}
+
 static string_lit const COMMAND_RPC_PREFIX = STRING_LIT("COMMAND_RPC_");
 decl_struct fill_struct(tokeniser_t *tokeniser)
 {
@@ -252,86 +335,37 @@ decl_struct fill_struct(tokeniser_t *tokeniser)
                 result.inner_structs.push_back(decl);
                 continue;
             }
+            else if (string_lit_cmp(token_lit, STRING_LIT("typedef")))
+            {
+              token = tokeniser_next_token(tokeniser);
+              decl_struct decl = {};
+              decl_var variable = {};
+              if (parse_type_and_var_decl(tokeniser, &variable))
+              {
+                decl.name = variable.name;
+
+                if (string_lit_cmp(variable.name, STRING_LIT("response")))
+                {
+                  decl.type = decl_struct_type::response;
+                }
+                else if (string_lit_cmp(variable.name, STRING_LIT("request")))
+                {
+                  decl.type = decl_struct_type::request;
+                }
+                else
+                {
+                  continue;
+                }
+
+                decl.variables.push_back(variable);
+                result.inner_structs.push_back(decl);
+              }
+            }
             else
             {
-                bool member_function = false;
-                char *type_decl_start = token.str;
-                token_t var_decl = {};
-                for (token_t sub_token = tokeniser_peek_token(tokeniser);; sub_token = tokeniser_peek_token(tokeniser))
-                {
-                    // Member function decl
-                    if (sub_token.type == token_type::open_paren)
-                    {
-                      sub_token       = tokeniser_next_token(tokeniser);
-                      member_function = true;
-
-                      for (sub_token = tokeniser_next_token(tokeniser);; sub_token = tokeniser_next_token(tokeniser))
-                      {
-                        if (sub_token.type == token_type::semicolon)
-                          break;
-
-                        // Inline function decl
-                        if (sub_token.type == token_type::left_curly_brace)
-                        {
-                          int orig_scope_level = tokeniser->indent_level - 1;
-                          assert(orig_scope_level >= 0);
-
-                          while (tokeniser->indent_level != orig_scope_level)
-                            sub_token = tokeniser_next_token(tokeniser);
-                          break;
-                        }
-                      }
-
-                    }
-
-                    if (sub_token.type == token_type::semicolon || sub_token.type == token_type::equal)
-                    {
-                        var_decl = tokeniser_prev_token(tokeniser);
-                        break;
-                    }
-                    sub_token = tokeniser_next_token(tokeniser);
-                }
-
-                if (member_function)
-                  continue;
-
-                char *type_decl_end = var_decl.str - 1;
-                decl_var variable   = {};
-                variable.type.str   = type_decl_start;
-                variable.type.len   = static_cast<int>(type_decl_end - type_decl_start);
-                variable.name       = token_to_string_lit(var_decl);
-                variable.type       = trim_whitespace_around(variable.type);
-
-                for (int i = 0; i < variable.type.len; ++i)
-                {
-                    if (variable.type.str[i] == '<')
-                    {
-                        variable.template_expr.str = variable.type.str + (++i);
-                        for (int j = ++i; j < variable.type.len; ++j)
-                        {
-                            if (variable.type.str[j] == '>')
-                            {
-                                char const *template_expr_end = variable.type.str + j;
-                                variable.template_expr.len    = static_cast<int>(template_expr_end - variable.template_expr.str);
-                                break;
-                            }
-                        }
-                        break;
-                    }
-                }
-
-                token = tokeniser_next_token(tokeniser);
-                if (token.type != token_type::semicolon)
-                   token = tokeniser_advance_until_token(tokeniser, token_type::semicolon);
-
-                token = tokeniser_peek_token(tokeniser);
-                if (token.type == token_type::comment)
-                {
-                    variable.comment = token_to_string_lit(token);
-                    token = tokeniser_next_token(tokeniser);
-                }
-
-                result.variables.push_back(variable);
+                decl_var variable = {};
+                if (parse_type_and_var_decl(tokeniser, &variable))
+                  result.variables.push_back(variable);
             }
         }
         else
