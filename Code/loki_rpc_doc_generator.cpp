@@ -11,6 +11,7 @@ type_conversion const TYPE_CONVERSION_TABLE[] =
     {STRING_LIT("uint8_t"),     STRING_LIT("uint8")},
     {STRING_LIT("int64_t"),     STRING_LIT("int64")},
     {STRING_LIT("blobdata"),    STRING_LIT("string")},
+    {STRING_LIT("crypto::hash"),STRING_LIT("string[64]")},
 };
 
 bool string_lit_cmp(string_lit a, string_lit b)
