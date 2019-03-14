@@ -12,6 +12,7 @@ type_conversion const TYPE_CONVERSION_TABLE[] =
     {STRING_LIT("int64_t"),     STRING_LIT("int64")},
     {STRING_LIT("blobdata"),    STRING_LIT("string")},
     {STRING_LIT("crypto::hash"),STRING_LIT("string[64]")},
+    {STRING_LIT("difficulty_type"),STRING_LIT("uint64")}, // TODO(doyle): Hmm should be derived from codebase?
 };
 
 bool string_lit_cmp(string_lit a, string_lit b)
