@@ -5,11 +5,11 @@
 type_conversion const TYPE_CONVERSION_TABLE[] =
 {
     {STRING_LIT("std::string"), STRING_LIT("string")},
-    {STRING_LIT("uint64_t"),    STRING_LIT("u64")},
-    {STRING_LIT("uint32_t"),    STRING_LIT("u32")},
-    {STRING_LIT("uint16_t"),    STRING_LIT("u8")},
-    {STRING_LIT("uint8_t"),     STRING_LIT("u8")},
-    {STRING_LIT("int64_t"),     STRING_LIT("i64")},
+    {STRING_LIT("uint64_t"),    STRING_LIT("uint64")},
+    {STRING_LIT("uint32_t"),    STRING_LIT("uint32")},
+    {STRING_LIT("uint16_t"),    STRING_LIT("uint16")},
+    {STRING_LIT("uint8_t"),     STRING_LIT("uint8")},
+    {STRING_LIT("int64_t"),     STRING_LIT("int64")},
     {STRING_LIT("blobdata"),    STRING_LIT("string")},
 };
 
