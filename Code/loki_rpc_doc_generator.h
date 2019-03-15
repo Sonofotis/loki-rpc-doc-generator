@@ -58,10 +58,14 @@ enum struct token_type
     fwd_slash,
     semicolon,
     colon,
+    open_paren,
+    close_paren,
     namespace_colon,
     comment,
     less_than,
     greater_than,
+    equal,
+    introspect_marker,
     end_of_stream,
 };
 
@@ -107,6 +111,12 @@ struct decl_struct
   std::vector<decl_struct> inner_structs;
   std::vector<decl_var>    variables;
   std::vector<decl_enum>   enums;
+};
+
+struct decl_struct_wrapper
+{
+  std::vector<string_lit> pre_decl_comments;
+  decl_struct             decl;
 };
 
 struct token_t
