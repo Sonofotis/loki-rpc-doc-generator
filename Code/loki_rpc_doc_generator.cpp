@@ -343,7 +343,6 @@ decl_struct fill_struct(tokeniser_t *tokeniser)
               if (parse_type_and_var_decl(tokeniser, &variable))
               {
                 decl.name = variable.name;
-
                 if (string_lit_cmp(variable.name, STRING_LIT("response")))
                 {
                   decl.type = decl_struct_type::response;
@@ -405,12 +404,11 @@ void fprint_variable(std::vector<decl_struct const *> *global_helper_structs, st
     if (converted_type)
       var_type = converted_type;
 
-    for (int i = 0; i < indent_level * 2; i++)
+    for (int i = 0; i < indent_level * 4; i++)
       fprintf(stdout, " ");
 
-    fprintf(stdout, " * `%.*s - %.*s", variable->name.len, variable->name.str, var_type->len, var_type->str);
+    fprintf(stdout, " * `%.*s` - %.*s", variable->name.len, variable->name.str, var_type->len, var_type->str);
     if (is_array) fprintf(stdout, "[]");
-    fprintf(stdout, "`");
 
     if (variable->comment.len > 0) fprintf(stdout, ": %.*s", variable->comment.len, variable->comment.str);
     fprintf(stdout, "\n");
@@ -463,7 +461,7 @@ void generate_markdown(std::vector<decl_struct_wrapper> const *declarations)
     {
         decl_struct const &decl = wrapper.decl;
         if (decl.type == decl_struct_type::rpc_command)
-            fprintf(stdout, " - [%.*s](#%.*s)\n", decl.name.len, decl.name.str, decl.name.len, decl.name.str);
+            fprintf(stdout, " - [%.*s](%.*s)\n", decl.name.len, decl.name.str, decl.name.len, decl.name.str);
     }
     fprintf(stdout, "\n\n");
 
@@ -510,10 +508,10 @@ void generate_markdown(std::vector<decl_struct_wrapper> const *declarations)
 
         if (wrapper.pre_decl_comments.size() > 0)
         {
-          fprintf(stdout, "```\n");
+          fprintf(stdout, "\n");
           for (string_lit const &comment : wrapper.pre_decl_comments)
             fprintf(stdout, "%.*s\n", comment.len, comment.str);
-          fprintf(stdout, "```\n");
+          fprintf(stdout, "\n");
         }
 
         fprintf(stdout, "**Inputs:**\n");
