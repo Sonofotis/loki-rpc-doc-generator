@@ -104,6 +104,13 @@ bool char_is_alpha     (char ch) { return (ch >= 'A' && ch <= 'Z') || (ch >= 'a'
 bool char_is_digit     (char ch) { return (ch >= '0' && ch <= '9'); }
 bool char_is_alphanum  (char ch) { return char_is_alpha(ch) || char_is_digit(ch); }
 
+char char_to_lower(char ch)
+{
+   if (ch >= 'A' && ch <= 'Z')
+     ch += ('a' - 'A');
+   return ch;
+}
+
 #if 0
 decl_enum fill_enum(std::vector<token_t> *tokens)
 {
@@ -481,7 +488,15 @@ void generate_markdown(std::vector<decl_struct_wrapper> const *declarations)
     {
         decl_struct const &decl = wrapper.decl;
         if (decl.type == decl_struct_type::rpc_command)
-            fprintf(stdout, " - [%.*s](#%.*s)\n", decl.name.len, decl.name.str, decl.name.len, decl.name.str);
+        {
+            fprintf(stdout, " - [%.*s](#", decl.name.len, decl.name.str);
+            for (int i = 0; i < decl.name.len; ++i)
+            {
+              char ch = char_to_lower(decl.name.str[i]);
+              fprintf(stdout, "%c", ch);
+            }
+            fprintf(stdout, ")\n");
+        }
     }
     fprintf(stdout, "\n\n");
 
