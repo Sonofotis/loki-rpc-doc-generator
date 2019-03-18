@@ -71,6 +71,24 @@ char *read_entire_file(char const *file_path, ptrdiff_t *file_size)
     return result;
 }
 
+char *str_multi_find(char *start, string_lit const *find, int find_len, int *find_index)
+{
+    for (char *ptr = start; ptr && ptr[0]; ptr++)
+    {
+        for (int i = 0; i < find_len; ++i)
+        {
+            string_lit const *check = find + i;
+            if (strncmp(ptr, check->str, check->len) == 0)
+            {
+                if (find_index) *find_index = i;
+                return ptr;
+            }
+        }
+    }
+
+    return nullptr;
+}
+
 char *str_find(char *start, string_lit find)
 {
     for (char *ptr = start; ptr && ptr[0]; ptr++)
@@ -473,6 +491,11 @@ void generate_markdown(std::vector<decl_struct_wrapper> const *declarations)
     for (decl_struct_wrapper const &wrapper : (*declarations))
     {
         decl_struct const &global_decl = wrapper.decl;
+        if (global_decl.type == decl_struct_type::invalid)
+        {
+            continue;
+        }
+
         if (global_decl.type == decl_struct_type::helper)
         {
             global_helper_structs.push_back(&global_decl);
@@ -507,14 +530,34 @@ void generate_markdown(std::vector<decl_struct_wrapper> const *declarations)
         }
 
         fprintf(stdout, "### %.*s\n\n", global_decl.name.len, global_decl.name.str);
-
-        if (wrapper.pre_decl_comments.size() > 0)
+        if (wrapper.aliases.size() > 0 || wrapper.pre_decl_comments.size())
         {
-          fprintf(stdout, "```\n");
-          for (string_lit const &comment : wrapper.pre_decl_comments)
-            fprintf(stdout, "%.*s\n", comment.len, comment.str);
-          fprintf(stdout, "```\n");
+            fprintf(stdout, "```\n");
+            if (wrapper.aliases.size() > 0)
+            {
+              fprintf(stdout, "Endpoints: ");
+              for(int i = 0; i < wrapper.aliases.size(); i++)
+              {
+                string_lit const &alias = wrapper.aliases[i];
+                fprintf(stdout, "%.*s", alias.len, alias.str);
+
+                if (i < (wrapper.aliases.size() - 1))
+                  fprintf(stdout, ", ");
+              }
+              fprintf(stdout, "\n");
+
+              if (wrapper.pre_decl_comments.size() > 0)
+                fprintf(stdout, "\n");
+            }
+
+            if (wrapper.pre_decl_comments.size() > 0)
+            {
+              for (string_lit const &comment : wrapper.pre_decl_comments)
+                fprintf(stdout, "%.*s\n", comment.len, comment.str);
+            }
+            fprintf(stdout, "```\n");
         }
+
 
         fprintf(stdout, "**Inputs:**\n");
         fprintf(stdout, "\n");
@@ -541,48 +584,63 @@ char *next_token(char *src)
 
 int main(int argc, char *argv[])
 {
-    std::vector<token_t> token_list;
-    token_list.reserve(16384);
-
     std::vector<decl_struct_wrapper> declarations;
     declarations.reserve(128);
 
-    for (int arg_index = 1; arg_index < argc; arg_index++)
+    struct name_to_alias
     {
-        declarations.clear();
-        token_list.clear();
+      string_lit name;
+      string_lit alias;
+    };
+    std::vector<name_to_alias> struct_rpc_aliases;
+    struct_rpc_aliases.reserve(128);
 
+    std::vector<token_t> token_list;
+    token_list.reserve(16384);
+    for (int arg_index = 1; arg_index < argc; arg_index++, token_list.clear())
+    {
         ptrdiff_t buf_size = 0;
         char *buf          = read_entire_file(argv[arg_index], &buf_size);
-        if (!buf) continue; // TODO(doyle): Log
-        DEFER { free(buf); };
-
         //
         // Lex File into token_list
         //
         {
-            string_lit const GENERATOR_START = STRING_LIT("LOKI_RPC_DOC_INTROSPECT");
-            char *ptr = buf;
-            bool first_one = true;
-            for (ptr = str_find(ptr, GENERATOR_START);
-                 ptr;
-                 ptr = str_find(ptr, GENERATOR_START))
+            token_type const LEX_MARKERS_TYPE[] =
             {
-              // TODO(doyle): Hack, skip the first one which is the #define
-              if (first_one)
-              {
-                ptr += GENERATOR_START.len;
-                first_one = false;
-                continue;
-              }
+              token_type::introspect_marker,
+              token_type::uri_json_rpc_marker,
+              token_type::uri_json_rpc_marker,
+              token_type::uri_binary_rpc_marker,
+              token_type::json_rpc_marker,
+              token_type::json_rpc_marker,
+            };
 
-              token_t introspect_marker = {};
-              introspect_marker.str = ptr;
-              introspect_marker.len = GENERATOR_START.len;
-              introspect_marker.type = token_type::introspect_marker;
-              token_list.push_back(introspect_marker);
+            string_lit const LEX_MARKERS[] =
+            {
+              STRING_LIT("LOKI_RPC_DOC_INTROSPECT"),
+              STRING_LIT("MAP_URI_AUTO_JON2_IF"), // TODO(doyle): Length dependant, longer lines must come first because the checking is naiive and doesn't check that the strings are delimited
+              STRING_LIT("MAP_URI_AUTO_JON2"),
+              STRING_LIT("MAP_URI_AUTO_BIN2"),
+              STRING_LIT("MAP_JON_RPC_WE_IF"),
+              STRING_LIT("MAP_JON_RPC_WE"),
+            };
+            static_assert(ARRAY_COUNT(LEX_MARKERS) == ARRAY_COUNT(LEX_MARKERS_TYPE), "Mismatched enum to string mapping");
 
-              ptr += GENERATOR_START.len;
+            char *ptr            = buf;
+            int lex_marker_index = 0;
+            for (ptr = str_multi_find(ptr, LEX_MARKERS, ARRAY_COUNT(LEX_MARKERS), &lex_marker_index);
+                 ptr;
+                 ptr = str_multi_find(ptr, LEX_MARKERS, ARRAY_COUNT(LEX_MARKERS), &lex_marker_index))
+            {
+
+              string_lit const *found_marker = LEX_MARKERS + lex_marker_index;
+              token_t lexing_marker_token    = {};
+              lexing_marker_token.str        = ptr;
+              lexing_marker_token.len        = found_marker->len;
+              lexing_marker_token.type       = LEX_MARKERS_TYPE[lex_marker_index];
+              token_list.push_back(lexing_marker_token);
+              ptr += lexing_marker_token.len;
+
               bool started_parsing_scope = false;
               int scope_level = 0;
               for (;ptr && *ptr;)
@@ -598,14 +656,25 @@ int main(int argc, char *argv[])
                   ptr              = curr_token.str + 1;
                   switch(curr_token.str[0])
                   {
-                      case '{': curr_token.type = token_type::left_curly_brace; started_parsing_scope = true; scope_level++; break;
-                      case '}': curr_token.type = token_type::right_curly_brace; scope_level--; break;
+                      case '{': curr_token.type = token_type::left_curly_brace; break;
+                      case '}': curr_token.type = token_type::right_curly_brace; break;
                       case ';': curr_token.type = token_type::semicolon; break;
                       case '=': curr_token.type = token_type::equal; break;
                       case '<': curr_token.type = token_type::less_than; break;
                       case '>': curr_token.type = token_type::greater_than; break;
                       case '(': curr_token.type = token_type::open_paren; break;
                       case ')': curr_token.type = token_type::close_paren; break;
+                      case ',': curr_token.type = token_type::comma; break;
+
+                      case '"':
+                      {
+                        curr_token.type = token_type::string;
+                        curr_token.str  = ptr++;
+                        while(ptr[0] != '"') ptr++;
+                        curr_token.len  = static_cast<int>(ptr - curr_token.str);
+                        ptr++;
+                      }
+                      break;
 
                       case ':':
                       {
@@ -664,7 +733,7 @@ int main(int argc, char *argv[])
                       default:
                       {
                           curr_token.type = token_type::identifier;
-                          if (char_is_alpha(ptr[0]) || ptr[0] == '_')
+                          if (char_is_alpha(ptr[0]) || ptr[0] == '_' || ptr[0] == '!')
                           {
                               ptr++;
                               while (char_is_alphanum(ptr[0]) || ptr[0] == '_') ptr++;
@@ -672,6 +741,31 @@ int main(int argc, char *argv[])
                           curr_token.len = static_cast<int>(ptr - curr_token.str);
                       }
                       break;
+                  }
+
+                  if (lexing_marker_token.type == token_type::introspect_marker)
+                  {
+                      if (curr_token.type == token_type::left_curly_brace)
+                      {
+                        started_parsing_scope = true;
+                        scope_level++;
+                      }
+                      else if (curr_token.type == token_type::right_curly_brace)
+                      {
+                        scope_level--;
+                      }
+                  }
+                  else
+                  {
+                      if (curr_token.type == token_type::open_paren)
+                      {
+                        started_parsing_scope = true;
+                        scope_level++;
+                      }
+                      else if (curr_token.type == token_type::close_paren)
+                      {
+                        scope_level--;
+                      }
                   }
 
                   string_lit token_lit = token_to_string_lit(curr_token);
@@ -712,7 +806,7 @@ int main(int argc, char *argv[])
                 if (token.type == token_type::end_of_stream)
                     break;
 
-                bool handled = true;
+                bool handled = false;
                 if (token.type == token_type::introspect_marker)
                 {
 
@@ -731,32 +825,58 @@ int main(int argc, char *argv[])
                       {
                           struct_wrapper.decl = fill_struct(&tokeniser);
                           declarations.push_back(struct_wrapper);
+                          handled = true;
                       }
                       else if (string_lit_cmp(token_lit, STRING_LIT("enum")))
                       {
                           // decl_struct doc = fill_struct(&tokeniser);
                       }
-                      else
-                      {
-                          handled = false;
-                      }
-                  }
-                  else
-                  {
-                      handled = false;
                   }
                 }
-                else
+                else if (token.type == token_type::uri_json_rpc_marker || token.type == token_type::uri_binary_rpc_marker || token.type == token_type::json_rpc_marker)
                 {
-                  handled = false;
+                    token = tokeniser_next_token(&tokeniser); // accept marker
+                    if (tokeniser_accept_token_if_type(&tokeniser, token_type::open_paren) &&
+                        tokeniser_accept_token_if_type(&tokeniser, token_type::string, &token))
+                    {
+                        string_lit rpc_alias = token_to_string_lit(token);
+                        if (tokeniser_accept_token_if_type(&tokeniser, token_type::comma) &&
+                            tokeniser_accept_token_if_type(&tokeniser, token_type::identifier) &&
+                            tokeniser_accept_token_if_type(&tokeniser, token_type::comma) &&
+                            tokeniser_accept_token_if_type(&tokeniser, token_type::identifier, &token))
+                        {
+                            string_lit struct_name   = token_to_string_lit(token);
+                            name_to_alias name_alias = {};
+                            name_alias.name          = struct_name;
+                            name_alias.alias         = rpc_alias;
+
+                            struct_rpc_aliases.push_back(name_alias);
+                            handled = true;
+                        }
+                    }
                 }
 
                 if (!handled)
                     token = tokeniser_next_token(&tokeniser);
             }
         }
-        generate_markdown(&declarations);
     }
+
+    //
+    // Resolve aliases to struct declarations
+    //
+    for (name_to_alias &name_alias : struct_rpc_aliases)
+    {
+        for(decl_struct_wrapper &decl_wrapper : declarations)
+        {
+            if (string_lit_cmp(decl_wrapper.decl.name, name_alias.name))
+            {
+                decl_wrapper.aliases.push_back(name_alias.alias);
+                break;
+            }
+        }
+    }
+    generate_markdown(&declarations);
 
     return 0;
 }

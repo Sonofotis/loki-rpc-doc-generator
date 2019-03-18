@@ -21,6 +21,7 @@
 //
 
 #include <vector>
+#include <map>
 #include <assert.h>
 #include <string.h>
 #include <ctype.h>
@@ -58,6 +59,7 @@ enum struct token_type
     fwd_slash,
     semicolon,
     colon,
+    comma,
     open_paren,
     close_paren,
     namespace_colon,
@@ -65,7 +67,13 @@ enum struct token_type
     less_than,
     greater_than,
     equal,
+    string,
+
     introspect_marker,
+    json_rpc_marker,
+    uri_binary_rpc_marker,
+    uri_json_rpc_marker,
+
     end_of_stream,
 };
 
@@ -98,6 +106,7 @@ struct decl_enum
 
 enum decl_struct_type
 {
+    invalid,
     rpc_command,
     request,
     response,
@@ -115,6 +124,7 @@ struct decl_struct
 
 struct decl_struct_wrapper
 {
+  std::vector<string_lit> aliases;
   std::vector<string_lit> pre_decl_comments;
   decl_struct             decl;
 };
