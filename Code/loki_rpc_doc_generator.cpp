@@ -791,6 +791,13 @@ void generate_markdown(std::vector<decl_struct_wrapper> const *declarations)
         if (wrapper.aliases.size() > 0 || wrapper.pre_decl_comments.size())
         {
             fprintf(stdout, "```\n");
+            if (wrapper.pre_decl_comments.size() > 0)
+            {
+              for (string_lit const &comment : wrapper.pre_decl_comments)
+                fprintf(stdout, "%.*s\n", comment.len, comment.str);
+            }
+            fprintf(stdout, "\n");
+
             if (wrapper.aliases.size() > 0)
             {
               fprintf(stdout, "Endpoints: ");
@@ -815,11 +822,6 @@ void generate_markdown(std::vector<decl_struct_wrapper> const *declarations)
               fprint_curl_example(&global_helper_structs, &rpc_helper_structs, request, response, wrapper.aliases[0]);
             }
 
-            if (wrapper.pre_decl_comments.size() > 0)
-            {
-              for (string_lit const &comment : wrapper.pre_decl_comments)
-                fprintf(stdout, "%.*s\n", comment.len, comment.str);
-            }
             fprintf(stdout, "```\n");
         }
 
