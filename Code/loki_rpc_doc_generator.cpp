@@ -2,19 +2,6 @@
 
 #include "loki_rpc_doc_generator.h"
 
-type_conversion const TYPE_CONVERSION_TABLE[] =
-{
-    {STRING_LIT("std::string"), STRING_LIT("string")},
-    {STRING_LIT("uint64_t"),    STRING_LIT("uint64")},
-    {STRING_LIT("uint32_t"),    STRING_LIT("uint32")},
-    {STRING_LIT("uint16_t"),    STRING_LIT("uint16")},
-    {STRING_LIT("uint8_t"),     STRING_LIT("uint8")},
-    {STRING_LIT("int64_t"),     STRING_LIT("int64")},
-    {STRING_LIT("blobdata"),    STRING_LIT("string")},
-    {STRING_LIT("crypto::hash"),STRING_LIT("string[64]")},
-    {STRING_LIT("difficulty_type"),STRING_LIT("uint64")}, // TODO(doyle): Hmm should be derived from codebase?
-};
-
 bool string_lit_cmp(string_lit a, string_lit b)
 {
     bool result = (a.len == b.len && (strncmp(a.str, b.str, a.len) == 0));
@@ -230,6 +217,115 @@ bool tokeniser_accept_token_if_type(tokeniser_t *tokeniser, token_type type, tok
     return false;
 }
 
+decl_var_metadata derive_metadata_from_variable(decl_var const *variable)
+{
+  decl_var_metadata result  = {};
+  result.semantic           = decl_semantic_t::unknown;
+  string_lit const var_type = (variable->is_array) ? variable->template_expr : variable->type;
+
+  if (string_lit_cmp(var_type, STRING_LIT("std::string")))
+  {
+    local_persist string_lit const NICE_NAME = STRING_LIT("string");
+    result.converted_type = &NICE_NAME;
+
+    if (string_lit_cmp(variable->name, STRING_LIT("wallet_address")))
+    {
+      local_persist string_lit const EXAMPLE_ADDRESS = STRING_LIT("\"L8KJf3nRQ53NTX1YLjtHryjegFRa3ZCEGLKmRxUfvkBWK19UteEacVpYqpYscSJ2q8WRuHPFdk7Q5W8pQB7Py5kvUs8vKSk\"");
+      result.example                                 = &EXAMPLE_ADDRESS;
+    }
+    else if (string_lit_cmp(variable->name, STRING_LIT("hash")))
+    {
+      local_persist string_lit const EXAMPLE_HASH  = STRING_LIT("\"bf430a3279f576ed8a814be25193e5a1ec61d3ee5729e64f47d8480ce5a2da70\"");
+      result.example                               = &EXAMPLE_HASH;
+    }
+    else if (string_lit_cmp(variable->name, STRING_LIT("operator_cut")))
+    {
+      local_persist string_lit const EXAMPLE = STRING_LIT("\"1.1%\"");
+      result.example                         = &EXAMPLE;
+    }
+    else if (string_lit_cmp(variable->name, STRING_LIT("host")))
+    {
+      local_persist string_lit const EXAMPLE = STRING_LIT("\"127.0.0.1\"");
+      result.example                         = &EXAMPLE;
+    }
+    else if (string_lit_cmp(variable->name, STRING_LIT("txids")))
+    {
+      local_persist string_lit const EXAMPLE = STRING_LIT("\"b605cab7e3b9fe1f6d322e3167cd26e1e61c764afa9d733233ef716787786123\"");
+      result.example                         = &EXAMPLE;
+    }
+    else
+    {
+      local_persist string_lit const EXAMPLE = STRING_LIT("\"default string\"");
+      result.example                         = &EXAMPLE;
+    }
+  }
+  else if (string_lit_cmp(var_type, STRING_LIT("uint64_t")))
+  {
+    local_persist string_lit const NICE_NAME = STRING_LIT("uint64");
+    local_persist string_lit const EXAMPLE   = STRING_LIT("123");
+    result.converted_type                    = &NICE_NAME;
+    result.example                           = &EXAMPLE;
+  }
+  else if (string_lit_cmp(var_type, STRING_LIT("uint32_t")))
+  {
+    local_persist string_lit const NICE_NAME = STRING_LIT("uint32");
+    local_persist string_lit const EXAMPLE   = STRING_LIT("2130706433");
+    result.converted_type = &NICE_NAME;
+    result.example        = &EXAMPLE;
+  }
+  else if (string_lit_cmp(var_type, STRING_LIT("uint16_t")))
+  {
+    local_persist string_lit const NICE_NAME = STRING_LIT("uint16");
+    result.converted_type = &NICE_NAME;
+  }
+  else if (string_lit_cmp(var_type, STRING_LIT("uint8_t")))
+  {
+    local_persist string_lit const EXAMPLE   = STRING_LIT("11");
+    local_persist string_lit const NICE_NAME = STRING_LIT("uint8");
+    result.converted_type = &NICE_NAME;
+    result.example        = &EXAMPLE;
+  }
+  else if (string_lit_cmp(var_type, STRING_LIT("int64_t")))
+  {
+    local_persist string_lit const NICE_NAME = STRING_LIT("int64");
+    result.converted_type = &NICE_NAME;
+    result.semantic = decl_semantic_t::int64;
+  }
+  else if (string_lit_cmp(var_type, STRING_LIT("blobdata")))
+  {
+    local_persist string_lit const NICE_NAME = STRING_LIT("string");
+    local_persist string_lit const EXAMPLE   = STRING_LIT("sd2b5f838e8cc7774d92f5a6ce0d72cb9bd8db2ef28948087f8a50ff46d188dd9");
+    result.converted_type = &NICE_NAME;
+    result.example        = &EXAMPLE;
+  }
+  else if (string_lit_cmp(var_type, STRING_LIT("bool")))
+  {
+    local_persist string_lit const EXAMPLE = STRING_LIT("true");
+    result.semantic                        = decl_semantic_t::boolean;
+    result.example                         = &EXAMPLE;
+  }
+  else if (string_lit_cmp(var_type, STRING_LIT("crypto::hash")))
+  {
+    local_persist string_lit const NICE_NAME = STRING_LIT("string[64]");
+    local_persist string_lit const EXAMPLE   = STRING_LIT("\"bf430a3279f576ed8a814be25193e5a1ec61d3ee5729e64f47d8480ce5a2da70\"");
+
+    result.converted_type = &NICE_NAME;
+    result.semantic       = decl_semantic_t::hash64;
+    result.example        = &EXAMPLE;
+  }
+  else if (string_lit_cmp(var_type, STRING_LIT("difficulty_type")))
+  {
+    local_persist string_lit const NICE_NAME = STRING_LIT("uint64");
+    local_persist string_lit const EXAMPLE   = STRING_LIT("25179406071");
+
+    result.converted_type = &NICE_NAME;
+    result.semantic       = decl_semantic_t::uint64;
+    result.example        = &EXAMPLE;
+  }
+
+  return result;
+};
+
 bool parse_type_and_var_decl(tokeniser_t *tokeniser, decl_var *variable)
 {
     token_t token = tokeniser_peek_token(tokeniser);
@@ -280,7 +376,6 @@ bool parse_type_and_var_decl(tokeniser_t *tokeniser, decl_var *variable)
     variable->type.len   = static_cast<int>(type_decl_end - type_decl_start);
     variable->name       = token_to_string_lit(var_decl);
     variable->type       = trim_whitespace_around(variable->type);
-
     for (int i = 0; i < variable->type.len; ++i)
     {
         if (variable->type.str[i] == '<')
@@ -298,6 +393,11 @@ bool parse_type_and_var_decl(tokeniser_t *tokeniser, decl_var *variable)
             break;
         }
     }
+
+    // TODO(doyle): This is horribly incomplete, but we only specify arrays on
+    // terms of dynamic structures in loki. So meh.
+    variable->is_array = variable->template_expr.len > 0;
+    variable->metadata = derive_metadata_from_variable(variable);
 
     token = tokeniser_next_token(tokeniser);
     if (token.type != token_type::semicolon)
@@ -402,23 +502,166 @@ decl_struct fill_struct(tokeniser_t *tokeniser)
     return result;
 }
 
-string_lit const *convert_cpp_type_with_conversion_table(string_lit const type_name)
+decl_struct const *lookup_type_definition(std::vector<decl_struct const *> *global_helper_structs,
+                                          std::vector<decl_struct const *> *rpc_helper_structs,
+                                          string_lit const var_type)
 {
-  string_lit const *result = nullptr;
-  for (int i = 0; i < ARRAY_COUNT(TYPE_CONVERSION_TABLE); ++i)
+  decl_struct const *result = nullptr;
+  for (decl_struct const *decl : *global_helper_structs)
   {
-      type_conversion const *conversion = TYPE_CONVERSION_TABLE + i;
-      if (conversion->from.len < type_name.len) continue;
-
-      if (string_lit_cmp(conversion->from, type_name))
+      if (string_lit_cmp(var_type, decl->name))
       {
-          result = &conversion->to;
-          break;
+        result = decl;
+        break;
       }
   }
 
+  if (!result)
+  {
+    for (decl_struct const *decl : *rpc_helper_structs)
+    {
+        if (string_lit_cmp(var_type, decl->name))
+        {
+          result = decl;
+          break;
+        }
+    }
+  }
+
   return result;
-};
+}
+
+void fprintf_indented(int indent_level, FILE *dest, char const *fmt...)
+{
+  for (int i = 0; i < indent_level * 2; ++i)
+    fprintf(dest, " ");
+
+  va_list va;
+  va_start(va, fmt);
+  vfprintf(dest, fmt, va);
+  va_end(va);
+}
+
+void fprint_curl_json_rpc_param(std::vector<decl_struct const *> *global_helper_structs, std::vector<decl_struct const *> *rpc_helper_structs, decl_var const *variable, int indent_level)
+{
+  decl_var_metadata const *metadata = &variable->metadata;
+  fprintf_indented(indent_level, stdout, "\"%.*s\": ", variable->name.len, variable->name.str);
+
+  string_lit var_type = variable->type;
+  if (variable->is_array)
+  {
+    fprintf(stdout, "[");
+    indent_level++;
+    var_type = variable->template_expr;
+  }
+
+  if (metadata->example)
+  {
+    fprintf(stdout, "%.*s", metadata->example->len, metadata->example->str);
+  }
+  else
+  {
+    if (decl_struct const *resolved_decl = lookup_type_definition(global_helper_structs, rpc_helper_structs, var_type))
+    {
+      fprintf(stdout, "{\n");
+      indent_level++;
+      for (size_t var_index = 0; var_index < resolved_decl->variables.size(); ++var_index)
+      {
+        decl_var const *inner_variable = &resolved_decl->variables[var_index];
+        fprint_curl_json_rpc_param(global_helper_structs, rpc_helper_structs, inner_variable, indent_level);
+        if (var_index < (resolved_decl->variables.size() - 1))
+          fprintf(stdout, ",\n");
+      }
+
+      fprintf(stdout, "\n");
+      fprintf_indented(--indent_level, stdout, "}");
+    }
+  }
+
+  if (variable->is_array)
+    fprintf(stdout, ", ...]");
+}
+
+void fprint_curl_example(std::vector<decl_struct const *> *global_helper_structs, std::vector<decl_struct const *> *rpc_helper_structs, decl_struct const *request, decl_struct const *response, string_lit const rpc_endpoint)
+{
+  //
+  // NOTE: Print the Curl Example
+  //
+
+  // fprintf(stdout, "curl -X POST http://127.0.0.1:22023/json_rpc -d '{\"jsonrpc\":\"2.0\",\"id\":\"0\",\"method\":\"%s\"}' -H 'Content-Type: application/json'")
+  fprintf(stdout, "Example Request\n");
+  if (rpc_endpoint.str[0] == '/')
+  {
+    fprintf(stdout, "curl -X POST http://127.0.0.1:22023%.*s -d '{", rpc_endpoint.len, rpc_endpoint.str);
+  }
+  else
+  {
+    int indent_level = 0;
+    if (request->variables.size() > 0)
+    {
+      fprintf_indented(indent_level, stdout, "curl -X POST http://127.0.0.1:22023/json_rpc -d '\n{\n");
+      indent_level++;
+    }
+    else
+    {
+      fprintf_indented(indent_level, stdout, "curl -X POST http://127.0.0.1:22023/json_rpc -d '{ ");
+    }
+
+    fprintf_indented(indent_level, stdout, "\"jsonrpc\":\"2.0\", \"id\":\"0\", \"method\":\"%.*s\"", rpc_endpoint.len, rpc_endpoint.str);
+
+    if (request->variables.size() > 0)
+    {
+      fprintf(stdout, ",\n");
+      fprintf_indented(indent_level, stdout, "\"params\": {\n");
+
+      indent_level++;
+#if 0
+      if (request->variables.size() == 1)
+      {
+        decl_var const *variable          = &request->variables[0];
+        decl_var_metadata const *metadata = &variable->metadata;
+
+        if (metadata->example)
+          fprintf(stdout, "%.*s", metadata->example->len, metadata->example->str);
+        else
+          fprintf(stdout, "XX");
+      }
+      else
+#endif
+      {
+        for (size_t var_index = 0; var_index < request->variables.size(); ++var_index)
+        {
+          decl_var const *variable = &request->variables[var_index];
+          fprint_curl_json_rpc_param(global_helper_structs, rpc_helper_structs, variable, indent_level);
+          if (var_index < (request->variables.size() - 1))
+            fprintf(stdout, ",\n");
+        }
+      }
+      fprintf(stdout, "\n");
+      fprintf_indented(--indent_level, stdout, "}");
+      --indent_level;
+    }
+  }
+
+  if (request->variables.size() > 0)
+    fprintf(stdout, "\n");
+
+  fprintf(stdout, "}' -H 'Content-Type: application/json'\n\n");
+
+  fprintf(stdout, "Example Response\n");
+  if (response->variables.size() > 0)
+  {
+    fprintf(stdout, "{\n");
+    for (size_t var_index = 0; var_index < response->variables.size(); ++var_index)
+    {
+      decl_var const *variable = &response->variables[var_index];
+      fprint_curl_json_rpc_param(global_helper_structs, rpc_helper_structs, variable, 1 /*indent_level*/);
+      if (var_index < (response->variables.size() - 1))
+        fprintf(stdout, ",\n");
+    }
+    fprintf(stdout, "\n}\n\n");
+  }
+}
 
 void fprint_variable(std::vector<decl_struct const *> *global_helper_structs, std::vector<decl_struct const *> *rpc_helper_structs, decl_var const *variable, int indent_level = 0)
 {
@@ -426,9 +669,9 @@ void fprint_variable(std::vector<decl_struct const *> *global_helper_structs, st
     string_lit const *var_type = &variable->type;
     if (is_array) var_type     = &variable->template_expr;
 
-    string_lit const *converted_type = convert_cpp_type_with_conversion_table(*var_type);
-    if (converted_type)
-      var_type = converted_type;
+    bool has_converted_type = (variable->metadata.converted_type != nullptr);
+    if (has_converted_type)
+      var_type = variable->metadata.converted_type;
 
     for (int i = 0; i < indent_level * 2; i++)
       fprintf(stdout, " ");
@@ -440,7 +683,7 @@ void fprint_variable(std::vector<decl_struct const *> *global_helper_structs, st
     if (variable->comment.len > 0) fprintf(stdout, ": %.*s", variable->comment.len, variable->comment.str);
     fprintf(stdout, "\n");
 
-    if (!converted_type)
+    if (!has_converted_type)
     {
         decl_struct const *resolved_decl = nullptr;
         for (decl_struct const *decl : *global_helper_structs)
@@ -563,6 +806,13 @@ void generate_markdown(std::vector<decl_struct_wrapper> const *declarations)
 
               if (wrapper.pre_decl_comments.size() > 0)
                 fprintf(stdout, "\n");
+
+              if (string_lit_cmp(wrapper.aliases[0], STRING_LIT("set_bans")))
+              {
+                int brea = 5;
+                (void)brea;
+              }
+              fprint_curl_example(&global_helper_structs, &rpc_helper_structs, request, response, wrapper.aliases[0]);
             }
 
             if (wrapper.pre_decl_comments.size() > 0)
@@ -628,6 +878,7 @@ int main(int argc, char *argv[])
               token_type::uri_binary_rpc_marker,
               token_type::json_rpc_marker,
               token_type::json_rpc_marker,
+              token_type::json_rpc_marker,
             };
 
             string_lit const LEX_MARKERS[] =
@@ -638,6 +889,7 @@ int main(int argc, char *argv[])
               STRING_LIT("MAP_URI_AUTO_BIN2"),
               STRING_LIT("MAP_JON_RPC_WE_IF"),
               STRING_LIT("MAP_JON_RPC_WE"),
+              STRING_LIT("MAP_JON_RPC"),
             };
             static_assert(ARRAY_COUNT(LEX_MARKERS) == ARRAY_COUNT(LEX_MARKERS_TYPE), "Mismatched enum to string mapping");
 
