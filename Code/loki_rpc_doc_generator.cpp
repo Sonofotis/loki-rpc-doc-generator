@@ -820,7 +820,7 @@ void generate_markdown(std::vector<decl_struct_wrapper> const *declarations)
            "Many RPC calls use the JSON RPC interface while others use their own interfaces, as demonstrated below.\n\n"
            "Note: \"atomic units\" refer to the smallest fraction of 1 LOKI which is 1e9 atomic units.\n\n"
            "## RPC Methods\n\n",
-           (1900 + gmtime_result->tm_year), gmtime_result->tm_mon, gmtime_result->tm_mday);
+           (1900 + gmtime_result->tm_year), (gmtime_result->tm_mon + 1), gmtime_result->tm_mday);
 
     for (decl_struct_wrapper const &wrapper : (*declarations))
     {
