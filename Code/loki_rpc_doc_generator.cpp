@@ -228,12 +228,21 @@ decl_var_metadata derive_metadata_from_variable(decl_var const *variable)
     local_persist string_lit const NICE_NAME = STRING_LIT("string");
     result.converted_type = &NICE_NAME;
 
-    if (string_lit_cmp(variable->name, STRING_LIT("wallet_address")))
+    if (string_lit_cmp(variable->name, STRING_LIT("wallet_address")) || string_lit_cmp(variable->name, STRING_LIT("miner_address")))
     {
       local_persist string_lit const EXAMPLE_ADDRESS = STRING_LIT("\"L8KJf3nRQ53NTX1YLjtHryjegFRa3ZCEGLKmRxUfvkBWK19UteEacVpYqpYscSJ2q8WRuHPFdk7Q5W8pQB7Py5kvUs8vKSk\"");
       result.example                                 = &EXAMPLE_ADDRESS;
     }
-    else if (string_lit_cmp(variable->name, STRING_LIT("hash")))
+    else if (string_lit_cmp(variable->name, STRING_LIT("hash")) ||
+             string_lit_cmp(variable->name, STRING_LIT("top_block_hash")) ||
+             string_lit_cmp(variable->name, STRING_LIT("pow_hash")) ||
+             string_lit_cmp(variable->name, STRING_LIT("block_hash")) ||
+             string_lit_cmp(variable->name, STRING_LIT("block_hashes")) ||
+             string_lit_cmp(variable->name, STRING_LIT("main_chain_parent_block")) ||
+             string_lit_cmp(variable->name, STRING_LIT("id_hash")) ||
+             string_lit_cmp(variable->name, STRING_LIT("max_used_block_id_hash")) ||
+             string_lit_cmp(variable->name, STRING_LIT("miner_tx_hash")) ||
+             string_lit_cmp(variable->name, STRING_LIT("prev_hash")))
     {
       local_persist string_lit const EXAMPLE_HASH  = STRING_LIT("\"bf430a3279f576ed8a814be25193e5a1ec61d3ee5729e64f47d8480ce5a2da70\"");
       result.example                               = &EXAMPLE_HASH;
@@ -248,14 +257,60 @@ decl_var_metadata derive_metadata_from_variable(decl_var const *variable)
       local_persist string_lit const EXAMPLE = STRING_LIT("\"127.0.0.1\"");
       result.example                         = &EXAMPLE;
     }
-    else if (string_lit_cmp(variable->name, STRING_LIT("txids")))
+    else if (string_lit_cmp(variable->name, STRING_LIT("txids")) ||
+             string_lit_cmp(variable->name, STRING_LIT("tx_hashes")) ||
+             string_lit_cmp(variable->name, STRING_LIT("txs_hashes")) ||
+             string_lit_cmp(variable->name, STRING_LIT("txid")))
     {
       local_persist string_lit const EXAMPLE = STRING_LIT("\"b605cab7e3b9fe1f6d322e3167cd26e1e61c764afa9d733233ef716787786123\"");
       result.example                         = &EXAMPLE;
     }
+    else if (string_lit_cmp(variable->name, STRING_LIT("service_node_pubkey")) ||
+             string_lit_cmp(variable->name, STRING_LIT("quorum_nodes")) ||
+             string_lit_cmp(variable->name, STRING_LIT("nodes_to_test")) ||
+             string_lit_cmp(variable->name, STRING_LIT("service_node_pubkeys")))
+    {
+      local_persist string_lit const EXAMPLE = STRING_LIT("\"4a8c30cea9e729b06c91132295cce32d2a8e6e5bcf7b74a998e2ee1b3ed590b3\"");
+      result.example                         = &EXAMPLE;
+    }
+    else if (string_lit_cmp(variable->name, STRING_LIT("nettype")))
+    {
+      local_persist string_lit const EXAMPLE = STRING_LIT("\"MAINNET\"");
+      result.example                         = &EXAMPLE;
+    }
+    else if (string_lit_cmp(variable->name, STRING_LIT("key_image")))
+    {
+      local_persist string_lit const EXAMPLE = STRING_LIT("\"8d1bd8181bf7d857bdb281e0153d84cd55a3fcaa57c3e570f4a49f935850b5e3\"");
+      result.example                         = &EXAMPLE;
+    }
+    else if (string_lit_cmp(variable->name, STRING_LIT("bootstrap_daemon_address")) || string_lit_cmp(variable->name, STRING_LIT("remote_address")))
+    {
+      local_persist string_lit const EXAMPLE = STRING_LIT("\"127.0.0.1:22023\"");
+      result.example                         = &EXAMPLE;
+    }
+    else if (string_lit_cmp(variable->name, STRING_LIT("status")))
+    {
+      local_persist string_lit const EXAMPLE = STRING_LIT("\"OK\"");
+      result.example                         = &EXAMPLE;
+    }
+    else if (string_lit_cmp(variable->name, STRING_LIT("connection_id")))
+    {
+      local_persist string_lit const EXAMPLE = STRING_LIT("\"083c301a3030329a487adb12ad981d2c\"");
+      result.example                         = &EXAMPLE;
+    }
+    else if (string_lit_cmp(variable->name, STRING_LIT("peer_id")))
+    {
+      local_persist string_lit const EXAMPLE = STRING_LIT("\"c959fbfbed9e44fb\"");
+      result.example                         = &EXAMPLE;
+    }
+    else if (string_lit_cmp(variable->name, STRING_LIT("port")))
+    {
+      local_persist string_lit const EXAMPLE = STRING_LIT("\"62950\"");
+      result.example                         = &EXAMPLE;
+    }
     else
     {
-      local_persist string_lit const EXAMPLE = STRING_LIT("\"default string\"");
+      local_persist string_lit const EXAMPLE = STRING_LIT("\"TODO(loki): Write example string\"");
       result.example                         = &EXAMPLE;
     }
   }
@@ -269,9 +324,18 @@ decl_var_metadata derive_metadata_from_variable(decl_var const *variable)
   else if (string_lit_cmp(var_type, STRING_LIT("uint32_t")))
   {
     local_persist string_lit const NICE_NAME = STRING_LIT("uint32");
-    local_persist string_lit const EXAMPLE   = STRING_LIT("2130706433");
-    result.converted_type = &NICE_NAME;
-    result.example        = &EXAMPLE;
+    result.converted_type                    = &NICE_NAME;
+
+    if (string_lit_cmp(variable->name, STRING_LIT("threads_count")))
+    {
+      local_persist string_lit const EXAMPLE = STRING_LIT("8");
+      result.example                         = &EXAMPLE;
+    }
+    else
+    {
+      local_persist string_lit const EXAMPLE = STRING_LIT("2130706433");
+      result.example                         = &EXAMPLE;
+    }
   }
   else if (string_lit_cmp(var_type, STRING_LIT("uint16_t")))
   {
@@ -287,14 +351,22 @@ decl_var_metadata derive_metadata_from_variable(decl_var const *variable)
   }
   else if (string_lit_cmp(var_type, STRING_LIT("int64_t")))
   {
+    local_persist string_lit const EXAMPLE   = STRING_LIT("8192");
     local_persist string_lit const NICE_NAME = STRING_LIT("int64");
     result.converted_type = &NICE_NAME;
-    result.semantic = decl_semantic_t::int64;
+    result.example        = &EXAMPLE;
+  }
+  else if (string_lit_cmp(var_type, STRING_LIT("int8_t")))
+  {
+    local_persist string_lit const NICE_NAME = STRING_LIT("int8");
+    local_persist string_lit const EXAMPLE   = STRING_LIT("8");
+    result.converted_type                    = &NICE_NAME;
+    result.example                           = &EXAMPLE;
   }
   else if (string_lit_cmp(var_type, STRING_LIT("blobdata")))
   {
     local_persist string_lit const NICE_NAME = STRING_LIT("string");
-    local_persist string_lit const EXAMPLE   = STRING_LIT("sd2b5f838e8cc7774d92f5a6ce0d72cb9bd8db2ef28948087f8a50ff46d188dd9");
+    local_persist string_lit const EXAMPLE   = STRING_LIT("\"sd2b5f838e8cc7774d92f5a6ce0d72cb9bd8db2ef28948087f8a50ff46d188dd9\"");
     result.converted_type = &NICE_NAME;
     result.example        = &EXAMPLE;
   }
@@ -590,57 +662,66 @@ void fprint_curl_example(std::vector<decl_struct const *> *global_helper_structs
 
   // fprintf(stdout, "curl -X POST http://127.0.0.1:22023/json_rpc -d '{\"jsonrpc\":\"2.0\",\"id\":\"0\",\"method\":\"%s\"}' -H 'Content-Type: application/json'")
   fprintf(stdout, "Example Request\n");
-  if (rpc_endpoint.str[0] == '/')
+  int indent_level = 0;
+
+  fprintf(stdout, "curl -X POST http://127.0.0.1:22023");
+
+  bool is_json_rpc = rpc_endpoint.str[0] != '/';
+  if (is_json_rpc) fprintf(stdout, "/json_rpc ");
+  else             fprintf(stdout, "%.*s ", rpc_endpoint.len, rpc_endpoint.str);
+
+  if (request->variables.size() > 0)
   {
-    fprintf(stdout, "curl -X POST http://127.0.0.1:22023%.*s -d '{", rpc_endpoint.len, rpc_endpoint.str);
+    fprintf_indented(indent_level, stdout, "-d '\n{\n");
+    indent_level++;
   }
   else
   {
-    int indent_level = 0;
-    if (request->variables.size() > 0)
+    fprintf_indented(indent_level, stdout, "-d '{ ");
+  }
+
+  if (is_json_rpc)
+  {
+    fprintf_indented(indent_level, stdout, "\"jsonrpc\":\"2.0\", \"id\":\"0\", \"method\":\"%.*s\"", rpc_endpoint.len, rpc_endpoint.str);
+  }
+
+  if (request->variables.size() > 0)
+  {
+    if (is_json_rpc)
     {
-      fprintf_indented(indent_level, stdout, "curl -X POST http://127.0.0.1:22023/json_rpc -d '\n{\n");
-      indent_level++;
+      fprintf(stdout, "\n");
+      fprintf_indented(indent_level++, stdout, "\"params\": {\n");
+    }
+
+#if 0
+    if (request->variables.size() == 1)
+    {
+      decl_var const *variable          = &request->variables[0];
+      decl_var_metadata const *metadata = &variable->metadata;
+
+      if (metadata->example)
+        fprintf(stdout, "%.*s", metadata->example->len, metadata->example->str);
+      else
+        fprintf(stdout, "XX");
     }
     else
+#endif
     {
-      fprintf_indented(indent_level, stdout, "curl -X POST http://127.0.0.1:22023/json_rpc -d '{ ");
+      for (size_t var_index = 0; var_index < request->variables.size(); ++var_index)
+      {
+        decl_var const *variable = &request->variables[var_index];
+        fprint_curl_json_rpc_param(global_helper_structs, rpc_helper_structs, variable, indent_level);
+        if (var_index < (request->variables.size() - 1))
+          fprintf(stdout, ",\n");
+      }
     }
 
-    fprintf_indented(indent_level, stdout, "\"jsonrpc\":\"2.0\", \"id\":\"0\", \"method\":\"%.*s\"", rpc_endpoint.len, rpc_endpoint.str);
-
-    if (request->variables.size() > 0)
+    if (is_json_rpc)
     {
-      fprintf(stdout, ",\n");
-      fprintf_indented(indent_level, stdout, "\"params\": {\n");
-
-      indent_level++;
-#if 0
-      if (request->variables.size() == 1)
-      {
-        decl_var const *variable          = &request->variables[0];
-        decl_var_metadata const *metadata = &variable->metadata;
-
-        if (metadata->example)
-          fprintf(stdout, "%.*s", metadata->example->len, metadata->example->str);
-        else
-          fprintf(stdout, "XX");
-      }
-      else
-#endif
-      {
-        for (size_t var_index = 0; var_index < request->variables.size(); ++var_index)
-        {
-          decl_var const *variable = &request->variables[var_index];
-          fprint_curl_json_rpc_param(global_helper_structs, rpc_helper_structs, variable, indent_level);
-          if (var_index < (request->variables.size() - 1))
-            fprintf(stdout, ",\n");
-        }
-      }
       fprintf(stdout, "\n");
       fprintf_indented(--indent_level, stdout, "}");
-      --indent_level;
     }
+    --indent_level;
   }
 
   if (request->variables.size() > 0)
@@ -717,6 +798,16 @@ void fprint_variable(std::vector<decl_struct const *> *global_helper_structs, st
     }
 }
 
+void collect_children_structs(std::vector<decl_struct const *> *rpc_helper_structs, std::vector<decl_struct> const *inner_structs)
+{
+  for (auto &inner_decl : *inner_structs)
+  {
+    collect_children_structs(rpc_helper_structs, &inner_decl.inner_structs);
+    if (inner_decl.type == decl_struct_type::helper)
+        rpc_helper_structs->push_back(&inner_decl);
+  }
+}
+
 void generate_markdown(std::vector<decl_struct_wrapper> const *declarations)
 {
     fprintf(stdout,
@@ -770,15 +861,14 @@ void generate_markdown(std::vector<decl_struct_wrapper> const *declarations)
         decl_struct const *request  = nullptr;
         decl_struct const *response = nullptr;
         rpc_helper_structs.clear();
+        collect_children_structs(&rpc_helper_structs, &global_decl.inner_structs);
         for (auto &inner_decl : global_decl.inner_structs)
         {
-            switch(inner_decl.type)
-            {
-                case decl_struct_type::request: request   = &inner_decl; break;
-                case decl_struct_type::response: response = &inner_decl; break;
-                case decl_struct_type::helper: rpc_helper_structs.push_back(&inner_decl); break;
-                default: break; // TODO(doyle): Warning unexpected decl inside rpc declaration
-            }
+          switch(inner_decl.type)
+          {
+              case decl_struct_type::request: request   = &inner_decl; break;
+              case decl_struct_type::response: response = &inner_decl; break;
+          }
         }
 
         if (!(request && response))
@@ -814,7 +904,7 @@ void generate_markdown(std::vector<decl_struct_wrapper> const *declarations)
               if (wrapper.pre_decl_comments.size() > 0)
                 fprintf(stdout, "\n");
 
-              if (string_lit_cmp(wrapper.aliases[0], STRING_LIT("set_bans")))
+              if (string_lit_cmp(wrapper.aliases[0], STRING_LIT("get_service_nodes")))
               {
                 int brea = 5;
                 (void)brea;
