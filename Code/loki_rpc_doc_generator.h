@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <time.h>
 
 #define local_persist static
 
