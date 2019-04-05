@@ -689,7 +689,7 @@ void fprint_curl_example(std::vector<decl_struct const *> *global_helper_structs
   {
     if (is_json_rpc)
     {
-      fprintf(stdout, "\n");
+      fprintf(stdout, ",\n");
       fprintf_indented(indent_level++, stdout, "\"params\": {\n");
     }
 
