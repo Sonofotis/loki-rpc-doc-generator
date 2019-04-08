@@ -1321,6 +1321,14 @@ int main(int argc, char *argv[])
                             tokeniser_accept_token_if_type(&tokeniser, token_type::identifier, &token))
                         {
                             string_lit struct_name   = token_to_string_lit(token);
+
+                            // TODO(doyle): Hmm hacky.
+                            if (struct_name == STRING_LIT("wallet_rpc"))
+                            {
+                              token       = tokeniser_next_token(&tokeniser, 2);
+                              struct_name = token_to_string_lit(token);
+                            }
+
                             name_to_alias name_alias = {};
                             name_alias.name          = struct_name;
                             name_alias.alias         = rpc_alias;
