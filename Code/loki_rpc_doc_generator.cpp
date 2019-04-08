@@ -237,7 +237,11 @@ decl_var_metadata derive_metadata_from_variable(decl_var const *variable, string
     local_persist string_lit const NICE_NAME = STRING_LIT("string");
     result.converted_type = &NICE_NAME;
 
-    if (variable->name == STRING_LIT("wallet_address") || variable->name == STRING_LIT("miner_address") || variable->name == STRING_LIT("operator_address") || variable->name == STRING_LIT("address"))
+    if (variable->name == STRING_LIT("wallet_address") ||
+        variable->name == STRING_LIT("miner_address") ||
+        variable->name == STRING_LIT("change_address") ||
+        variable->name == STRING_LIT("operator_address") ||
+        variable->name == STRING_LIT("address"))
     {
       local_persist string_lit const EXAMPLE_ADDRESS = STRING_LIT("\"L8KJf3nRQ53NTX1YLjtHryjegFRa3ZCEGLKmRxUfvkBWK19UteEacVpYqpYscSJ2q8WRuHPFdk7Q5W8pQB7Py5kvUs8vKSk\"");
       result.example                                 = &EXAMPLE_ADDRESS;
@@ -263,6 +267,12 @@ decl_var_metadata derive_metadata_from_variable(decl_var const *variable, string
       local_persist string_lit const EXAMPLE = STRING_LIT("\"1.1%\"");
       result.example                         = &EXAMPLE;
     }
+    else if (variable->name ==  STRING_LIT("payment_id"))
+    {
+      // TODO(doyle): Some examples need 32 byte payment ids
+      local_persist string_lit const EXAMPLE = STRING_LIT("\"f378710e54eeeb8d\"");
+      result.example                         = &EXAMPLE;
+    }
     else if (variable->name ==  STRING_LIT("host"))
     {
       local_persist string_lit const EXAMPLE = STRING_LIT("\"127.0.0.1\"");
@@ -281,6 +291,7 @@ decl_var_metadata derive_metadata_from_variable(decl_var const *variable, string
     }
     else if (variable->name == STRING_LIT("service_node_pubkey") ||
              variable->name == STRING_LIT("quorum_nodes") ||
+             variable->name == STRING_LIT("service_node_key") ||
              variable->name == STRING_LIT("nodes_to_test") ||
              variable->name == STRING_LIT("service_node_pubkeys"))
     {
@@ -377,6 +388,21 @@ decl_var_metadata derive_metadata_from_variable(decl_var const *variable, string
     else if (variable->name == STRING_LIT("last_seen"))
     {
       local_persist string_lit const EXAMPLE = STRING_LIT("1554685440");
+      result.example                         = &EXAMPLE;
+    }
+    else if (variable->name == STRING_LIT("filename"))
+    {
+      local_persist string_lit const EXAMPLE = STRING_LIT("wallet");
+      result.example                         = &EXAMPLE;
+    }
+    else if (variable->name == STRING_LIT("password"))
+    {
+      local_persist string_lit const EXAMPLE = STRING_LIT("password");
+      result.example                         = &EXAMPLE;
+    }
+    else if (variable->name == STRING_LIT("language"))
+    {
+      local_persist string_lit const EXAMPLE = STRING_LIT("English");
       result.example                         = &EXAMPLE;
     }
     else
