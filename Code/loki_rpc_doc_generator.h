@@ -88,7 +88,7 @@ struct string_lit
     char const *str;
     int         len;
 };
-#define STRING_LIT(str) {str, CHAR_COUNT(str)}
+#define STRING_LIT(str) (string_lit){str, CHAR_COUNT(str)}
 
 enum struct decl_semantic_t
 {
