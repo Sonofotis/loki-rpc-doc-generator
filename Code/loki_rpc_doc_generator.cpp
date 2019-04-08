@@ -783,7 +783,7 @@ void fprint_curl_example(std::vector<decl_struct const *> *global_helper_structs
   //
 
   // fprintf(stdout, "curl -X POST http://127.0.0.1:22023/json_rpc -d '{\"jsonrpc\":\"2.0\",\"id\":\"0\",\"method\":\"%s\"}' -H 'Content-Type: application/json'")
-  fprintf(stdout, "Example Request\n");
+  fprintf(stdout, "**Example Request:**\n```\n");
   int indent_level = 0;
 
   fprintf(stdout, "curl -X POST http://127.0.0.1:22023");
@@ -849,9 +849,9 @@ void fprint_curl_example(std::vector<decl_struct const *> *global_helper_structs
   if (request->variables.size() > 0)
     fprintf(stdout, "\n");
 
-  fprintf(stdout, "}' -H 'Content-Type: application/json'\n\n");
+  fprintf(stdout, "}' -H 'Content-Type: application/json'\n```\n");
 
-  fprintf(stdout, "Example Response\n");
+  fprintf(stdout, "**Example Response:**\n```\n");
   if (response->variables.size() > 0)
   {
     fprintf(stdout, "{\n");
@@ -862,8 +862,9 @@ void fprint_curl_example(std::vector<decl_struct const *> *global_helper_structs
       if (var_index < (response->variables.size() - 1))
         fprintf(stdout, ",\n");
     }
-    fprintf(stdout, "\n}\n\n");
+    fprintf(stdout, "\n}\n");
   }
+  fprintf(stdout,"```\n");
 }
 
 void fprint_variable(std::vector<decl_struct const *> *global_helper_structs, std::vector<decl_struct const *> *rpc_helper_structs, decl_var const *variable, int indent_level = 0)
@@ -876,7 +877,7 @@ void fprint_variable(std::vector<decl_struct const *> *global_helper_structs, st
     if (has_converted_type)
       var_type = variable->metadata.converted_type;
 
-    for (int i = 0; i < indent_level * 2; i++)
+    for (int i = 0; i < indent_level * 4; i++)
       fprintf(stdout, " ");
 
     fprintf(stdout, " * `%.*s - %.*s", variable->name.len, variable->name.str, var_type->len, var_type->str);
@@ -1015,30 +1016,28 @@ void generate_markdown(std::vector<decl_struct_wrapper> const *declarations)
             // TODO(doyle): Warning
             continue;
         }
-
-        fputs("### ", stdout);
-        fprint_string_and_escape_with_backslash(stdout, &global_decl.name, '_');
+		fprintf(stdout, "---\n\n");
+		fprintf(stdout, "### %.*s\n\n", global_decl.name.len, global_decl.name.str);
         fputs("\n\n", stdout);
 
         if (wrapper.aliases.size() > 0 || wrapper.pre_decl_comments.size())
         {
-            fprintf(stdout, "```\n");
             if (wrapper.pre_decl_comments.size() > 0)
             {
               for (string_lit const &comment : wrapper.pre_decl_comments)
-                fprintf(stdout, "%.*s\n", comment.len, comment.str);
+                fprintf(stdout, "%.*s\n\n", comment.len, comment.str);
             }
-            fprintf(stdout, "\n");
 
+            fprintf(stdout, "\n");
             if (wrapper.aliases.size() > 0)
             {
-              fprintf(stdout, "Endpoints: ");
+              fprintf(stdout, "**Endpoints:**\n ");
 
               string_lit const *main_alias = &wrapper.aliases[0];
               for(int i = 0; i < wrapper.aliases.size(); i++)
               {
                 string_lit const &alias = wrapper.aliases[i];
-                fprintf(stdout, "%.*s", alias.len, alias.str);
+                fprintf(stdout, "*%.*s*", alias.len, alias.str);
                 if (i < (wrapper.aliases.size() - 1))
                   fprintf(stdout, ", ");
 
@@ -1046,15 +1045,16 @@ void generate_markdown(std::vector<decl_struct_wrapper> const *declarations)
                 if (alias.str[0] != '/')
                   main_alias = &alias;
               }
-              fprintf(stdout, "\n");
+              fprintf(stdout, "\n\n");
 
               if (wrapper.pre_decl_comments.size() > 0)
                 fprintf(stdout, "\n");
 
               fprint_curl_example(&global_helper_structs, &rpc_helper_structs, request, response, *main_alias);
+              fprintf(stdout, "\n");
             }
 
-            fprintf(stdout, "```\n");
+
         }
 
 
