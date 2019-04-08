@@ -904,6 +904,16 @@ void collect_children_structs(std::vector<decl_struct const *> *rpc_helper_struc
   }
 }
 
+void fprint_string_and_escape_with_backslash(FILE *file, string_lit const *string, char char_to_escape)
+{
+  for (int i = 0; i < string->len; ++i)
+  {
+    char ch = string->str[i];
+    if (ch == char_to_escape) fputc('\\', file);
+    fputc(ch, file);
+  }
+}
+
 void generate_markdown(std::vector<decl_struct_wrapper> const *declarations)
 {
     time_t now;
@@ -923,13 +933,16 @@ void generate_markdown(std::vector<decl_struct_wrapper> const *declarations)
         decl_struct const &decl = wrapper.decl;
         if (decl.type == decl_struct_type::rpc_command)
         {
-            fprintf(stdout, " - [%.*s](#", decl.name.len, decl.name.str);
+            fputs(" - [", stdout);
+            fprint_string_and_escape_with_backslash(stdout, &decl.name, '_');
+
+            fputs("](#", stdout);
             for (int i = 0; i < decl.name.len; ++i)
             {
               char ch = char_to_lower(decl.name.str[i]);
-              fprintf(stdout, "%c", ch);
+              fputc(ch, stdout);
             }
-            fprintf(stdout, ")\n");
+            fputs(")\n", stdout);
         }
     }
     fprintf(stdout, "\n\n");
@@ -977,7 +990,10 @@ void generate_markdown(std::vector<decl_struct_wrapper> const *declarations)
             continue;
         }
 
-        fprintf(stdout, "### %.*s\n\n", global_decl.name.len, global_decl.name.str);
+        fputs("### ", stdout);
+        fprint_string_and_escape_with_backslash(stdout, &global_decl.name, '_');
+        fputs("\n\n", stdout);
+
         if (wrapper.aliases.size() > 0 || wrapper.pre_decl_comments.size())
         {
             fprintf(stdout, "```\n");
